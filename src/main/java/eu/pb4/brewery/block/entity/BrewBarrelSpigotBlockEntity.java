@@ -6,8 +6,11 @@ import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
+import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.IngredientMixtureItem;
+import eu.pb4.brewery.item.comp.BrewData;
+import eu.pb4.brewery.item.comp.CookingData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.sgui.api.gui.SimpleGui;
@@ -23,6 +26,7 @@ import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtLongArray;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
@@ -36,6 +40,8 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEntity implements TickableContents, SidedInventory {
@@ -88,10 +94,10 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         this.requestUpdate = false;
     }
 
-    protected void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        super.writeNbt(nbt, lookup);
         if (!this.writeLootTable(nbt)) {
-            Inventories.writeNbt(nbt, this.inventory);
+            Inventories.writeNbt(nbt, this.inventory, lookup);
         }
 
         nbt.put("Parts", new NbtLongArray(this.parts));
@@ -99,11 +105,11 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
         nbt.putLong("LastTicked", this.lastTicked);
     }
 
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        super.readNbt(nbt, lookup);
         this.inventory = DefaultedList.ofSize(this.size(), ItemStack.EMPTY);
         if (!this.readLootTable(nbt)) {
-            Inventories.readNbt(nbt, this.inventory);
+            Inventories.readNbt(nbt, this.inventory, lookup);
         }
 
         this.parts.clear();
@@ -125,7 +131,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
                     var oldType = DrinkUtils.getType(stack);
 
-                    if (oldType == null && stack.getOrCreateNbt().contains(DrinkUtils.TYPE_NBT)) {
+                    if (oldType == null && stack.contains(BrewComponents.BREW_DATA) && Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
                         continue;
                     }
 
@@ -141,7 +147,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
 
                         for (var type : types) {
                             var barrelInfo = type.getBarrelInfo(this.material.type());
-                            if (ageSec >= barrelInfo.baseTime()) {
+                            if (barrelInfo != null && ageSec >= barrelInfo.baseTime()) {
                                 var newAge = ageSec - barrelInfo.baseTime();
 
                                 var q = barrelInfo.qualityChange().expression()
@@ -161,28 +167,23 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
                         }
 
                         if (match == null) {
-                            stack.getOrCreateNbt().putDouble(DrinkUtils.AGE_NBT, age);
+                            stack.apply(BrewComponents.BREW_DATA, BrewData.DEFAULT, x -> x.withAge(age));
                         } else if (quality < 0) {
                             this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
                         } else {
                             if (stack.isOf(BrewItems.INGREDIENT_MIXTURE)) {
                                 var nStack = new ItemStack(BrewItems.DRINK_ITEM);
-                                nStack.setNbt(stack.getNbt());
+                                nStack.set(BrewComponents.COOKING_DATA, stack.get(BrewComponents.COOKING_DATA));
                                 stack = nStack;
                                 this.setStack(i, stack);
                             }
-                            stack.getOrCreateNbt().putDouble(DrinkUtils.AGE_NBT, age);
-                            stack.getOrCreateNbt().putString(DrinkUtils.TYPE_NBT, BreweryInit.DRINK_TYPE_ID.get(match).toString());
-
                             var barrelInfo = match.getBarrelInfo(this.material.type());
 
                             if (barrelInfo != null) {
-                                stack.getOrCreateNbt().putString(DrinkUtils.BARREL_TYPE_NBT, this.material.type().toString());
-
-                                var mult = match.cookingQualityMult().expression().setVariable("age", stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT) / 20d).evaluate();
+                                var mult = match.cookingQualityMult().expression().setVariable("age", stack.getOrDefault(BrewComponents.COOKING_DATA, CookingData.DEFAULT).time() / 20).evaluate();
 
                                 if (quality * mult >= 0) {
-                                    stack.getNbt().putDouble(DrinkUtils.QUALITY_NBT, Math.min(quality * mult, 10));
+                                    stack.set(BrewComponents.BREW_DATA, new BrewData(Optional.of(BreweryInit.DRINK_TYPE_ID.get(match)), Math.min(quality * mult, 10), this.material.type().toString(), 0, age));
                                 } else {
                                     this.setStack(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
                                 }
@@ -205,13 +206,13 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     }
 
     @Override
-    protected DefaultedList<ItemStack> method_11282() {
+    protected DefaultedList<ItemStack> getHeldStacks() {
         return this.inventory;
     }
 
     @Override
-    protected void setInvStackList(DefaultedList<ItemStack> list) {
-        this.inventory = list;
+    protected void setHeldStacks(DefaultedList<ItemStack> inventory) {
+        this.inventory = inventory;
     }
 
     @Override

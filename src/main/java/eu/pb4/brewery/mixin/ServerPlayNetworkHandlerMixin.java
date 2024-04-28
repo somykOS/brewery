@@ -4,6 +4,7 @@ import eu.pb4.brewery.item.BookOfBreweryItem;
 import eu.pb4.brewery.item.BrewItems;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.LastSeenMessageList;
+import net.minecraft.network.packet.c2s.play.ChatCommandSignedC2SPacket;
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
@@ -30,13 +31,13 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     }
 
     @Inject(method = "handleCommandExecution", at = @At(value = "HEAD"), cancellable = true)
-    private void brewery$onCommand(CommandExecutionC2SPacket packet, LastSeenMessageList lastSeenMessages, CallbackInfo ci) {
+    private void brewery$onCommand(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages, CallbackInfo ci) {
         if (packet.command().startsWith("brewery$gui") && (player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) || player.getOffHandStack().isOf(BrewItems.BOOK_ITEM))) {
             var id = Identifier.tryParse(packet.command().substring("brewery$gui ".length()));
 
             if (id != null) {
                 this.server.execute(() -> {
-                    this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+                    this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
                     new BookOfBreweryItem.BrewGui(player, id, true,
                             () -> new BookOfBreweryItem.IndexGui(player, player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) ? Hand.MAIN_HAND : Hand.OFF_HAND).open()
                     ).open();

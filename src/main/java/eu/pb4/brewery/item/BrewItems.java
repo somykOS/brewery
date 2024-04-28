@@ -6,6 +6,7 @@ import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.item.debug.BlockTickerItem;
 import eu.pb4.polymer.core.api.item.PolymerBlockItem;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
@@ -38,7 +39,7 @@ public class BrewItems {
                 e.add(BARREL_SPIGOT);
 
                 for (var entry : BreweryInit.DRINK_TYPES.entrySet()) {
-                    e.add(DrinkUtils.createDrink(entry.getKey(), 0, 10, entry.getValue().distillationRuns(), new Identifier("air")));
+                    e.add(DrinkUtils.createDrink(entry.getKey(), 0, 10, entry.getValue().distillationRuns(), Blocks.AIR));
                 }
 
                 if (BreweryInit.IS_DEV) {

@@ -5,7 +5,10 @@ import eu.pb4.brewery.block.BrewCauldronBlock;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
+import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
+import eu.pb4.brewery.item.comp.BrewData;
+import eu.pb4.brewery.item.comp.CookingData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
@@ -23,9 +26,10 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -35,11 +39,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BrewCauldronBlockEntity extends BlockEntity implements TickableContents {
-    private NbtList inventory = new NbtList();
+    private List<ItemStack> inventory = new ArrayList<>();
     private long lastTicked = -1;
     private double timeCooking = 0;
     private ElementHolder elementHolder;
-    private TextDisplayElement[] textDisplayElement = new TextDisplayElement[4];
+    private final TextDisplayElement[] textDisplayElement = new TextDisplayElement[4];
 
     public BrewCauldronBlockEntity(BlockPos pos, BlockState state) {
         super(BrewBlockEntities.CAULDRON, pos, state);
@@ -106,37 +110,54 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
         this.elementHolder = null;
     }
 
-    protected void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        super.writeNbt(nbt, lookup);
         nbt.putLong("LastTicked", this.lastTicked);
-        nbt.put("Ingredients", this.inventory);
+        var list = new NbtList();
+        for (var stack : this.inventory) {
+            list.add(stack.encode(lookup));
+        }
+
+        nbt.put("Ingredients", list);
         nbt.putDouble("CookingTime", this.timeCooking);
     }
 
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        super.readNbt(nbt, lookup);
         this.lastTicked = nbt.getLong("LastTicked");
-        this.inventory = nbt.getList("Ingredients", NbtElement.COMPOUND_TYPE);
+        this.inventory.clear();
+        var list = nbt.getList("Ingredients", NbtElement.COMPOUND_TYPE);
+        for (var item : list) {
+            this.inventory.add(ItemStack.fromNbtOrEmpty(lookup, (NbtCompound) item));
+        }
         this.timeCooking = nbt.getDouble("CookingTime");
     }
 
     public void addIngredients(List<ItemEntity> entities) {
-        var items = new ArrayList<ItemStack>();
         for (var entity : entities) {
             if (!entity.getStack().isEmpty()) {
-                items.add(entity.getStack());
+                var stack = entity.getStack().copy();
+                for (var existing : this.inventory) {
+                    if (ItemStack.areItemsAndComponentsEqual(stack, existing)) {
+                        var count = Math.min(stack.getCount(), existing.getMaxCount() - existing.getCount());
+                        existing.increment(count);
+                        stack.decrement(count);
+                    }
+                    if (stack.isEmpty()) {
+                        break;
+                    }
+                }
+                if (!stack.isEmpty()) {
+                    this.inventory.add(stack);
+                }
             }
 
             entity.discard();
         }
-
-        for (var item : items) {
-            this.inventory.add(item.writeNbt(new NbtCompound()));
-        }
     }
 
-    public boolean onUse(PlayerEntity player, Hand hand) {
-        var stack = player.getStackInHand(hand);
+    public boolean onUse(PlayerEntity player) {
+        var stack = player.getMainHandStack();
 
         if (!stack.isEmpty() && stack.isOf(Items.GLASS_BOTTLE)) {
             stack.decrement(1);
@@ -145,7 +166,7 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
             var ingredients = new ArrayList<ItemStack>();
 
             for (var nbt : this.inventory) {
-                ingredients.add(ItemStack.fromNbt((NbtCompound) nbt));
+                ingredients.add(nbt.copy());
             }
             var heatSource = this.getWorld().getBlockState(this.pos.down()).getBlock();
             var types = DrinkUtils.findTypes(ingredients, null, heatSource);
@@ -171,14 +192,15 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
 
                 if (match == null || quality < 0) {
                     var out = new ItemStack(BrewItems.INGREDIENT_MIXTURE);
+                    var stacks = new ArrayList<ItemStack>();
+                    for (var st : this.inventory) {
+                        stacks.add(st.copy());
+                    }
 
-                    out.getOrCreateNbt().putDouble(DrinkUtils.AGE_COOK_NBT, age);
-                    out.getOrCreateNbt().put("Ingredients", this.inventory.copy());
-                    out.getOrCreateNbt().putString(DrinkUtils.HEAT_SOURCE_NBT, Registries.BLOCK.getId(heatSource).toString());
-
+                    out.set(BrewComponents.COOKING_DATA, new CookingData(age, stacks, heatSource));
                     player.giveItemStack(out);
                 } else {
-                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, Registries.BLOCK.getId(heatSource)));
+                    player.giveItemStack(DrinkUtils.createDrink(BreweryInit.DRINK_TYPE_ID.get(match), 0, quality * 10, 0, heatSource));
                 }
             }
 

@@ -2,6 +2,8 @@ package eu.pb4.brewery.mixin;
 
 import eu.pb4.brewery.drink.AlcoholManager;
 import eu.pb4.brewery.duck.LivingEntityExt;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -14,9 +16,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin implements LivingEntityExt {
+public abstract class LivingEntityMixin extends Entity implements LivingEntityExt {
     @Unique
     private AlcoholManager brewery$alcoholManager = new AlcoholManager((LivingEntity) (Object) this);
+
+    public LivingEntityMixin(EntityType<?> type, World world) {
+        super(type, world);
+    }
 
     @Override
     public AlcoholManager brewery$getAlcoholManager() {
@@ -30,12 +36,12 @@ public class LivingEntityMixin implements LivingEntityExt {
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void brewery$writeData(NbtCompound nbt, CallbackInfo ci) {
-        this.brewery$alcoholManager.writeNbt(nbt);
+        this.brewery$alcoholManager.writeNbt(nbt, this.getRegistryManager());
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void brewery$readData(NbtCompound nbt, CallbackInfo ci) {
-        this.brewery$alcoholManager.readNbt(nbt);
+        this.brewery$alcoholManager.readNbt(nbt, this.getRegistryManager());
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

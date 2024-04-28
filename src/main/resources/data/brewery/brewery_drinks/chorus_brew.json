@@ -34,6 +34,24 @@
     {
       "type": "teleport_random",
       "distance": "quality * 10"
+    },
+    {
+      "type": "attributes",
+      "time": "quality * 5",
+      "entries": [
+        {
+          "uuid": [
+            1729037996,
+            -402507667,
+            -1600814949,
+            -508991647
+          ],
+          "name": "Chorus Brew Gravity effect",
+          "amount": -0.08,
+          "operation": "add_value",
+          "type": "minecraft:generic.gravity"
+        }
+      ]
     }
   ],
   "name": {

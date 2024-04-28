@@ -52,11 +52,6 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     }
 
     @Override
-    public Block getPolymerBlock(BlockState state) {
-        return Blocks.TRIPWIRE_HOOK;
-    }
-
-    @Override
     public BlockState getPolymerBlockState(BlockState state) {
         return Blocks.TRIPWIRE_HOOK.getDefaultState().with(TripwireHookBlock.FACING, state.get(FACING).getOpposite());
     }
@@ -112,19 +107,18 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (hand == Hand.MAIN_HAND) {
-            var blockEntity = world.getBlockEntity(pos);
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player,  BlockHitResult hit) {
+        var blockEntity = world.getBlockEntity(pos);
 
-            if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock && barrelBlock.canPlayerUse(player)) {
-                barrelBlock.openGui((ServerPlayerEntity) player);
-                world.playSound(null,
-                        barrelBlock.getPos().getX() + 0.5,
-                        barrelBlock.getPos().getY() + 0.5,
-                        barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
-                return ActionResult.SUCCESS;
-            }
+        if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock && barrelBlock.canPlayerUse(player)) {
+            barrelBlock.openGui((ServerPlayerEntity) player);
+            world.playSound(null,
+                    barrelBlock.getPos().getX() + 0.5,
+                    barrelBlock.getPos().getY() + 0.5,
+                    barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+            return ActionResult.SUCCESS;
         }
+
         return ActionResult.PASS;
     }
 

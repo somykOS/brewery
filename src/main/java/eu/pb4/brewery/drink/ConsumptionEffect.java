@@ -1,23 +1,22 @@
 package eu.pb4.brewery.drink;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.duck.StatusEffectInstanceExt;
 import eu.pb4.brewery.other.TypeMapCodec;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
-import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryCodecs;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryElementCodec;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryFixedCodec;
 import net.minecraft.server.MinecraftServer;
@@ -50,13 +49,14 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
         self.register("freeze", (MapCodec<ConsumptionEffect>) (Object) Freeze.CODEC);
         self.register("set_alcohol_level", (MapCodec<ConsumptionEffect>) (Object) SetAlcoholLevel.CODEC);
         self.register("delayed", (MapCodec<ConsumptionEffect>) (Object) Delayed.CODEC);
+        self.register("attributes", (MapCodec<ConsumptionEffect>) (Object) Attributes.CODEC);
         self.register("velocity", (MapCodec<ConsumptionEffect>) (Object) Velocity.CODEC);
         self.register("damage", (MapCodec<ConsumptionEffect>) (Object) Damage.CODEC);
     });
 
     Codec<ConsumptionEffect> CODEC = new MapCodec.MapCodecCodec<>(MAP_CODEC);
 
-    static ConsumptionEffect of(StatusEffect effect, String time, String value, boolean locked) {
+    static ConsumptionEffect of(RegistryEntry<StatusEffect> effect, String time, String value, boolean locked) {
         return new ConsumptionEffect.Potion(effect, WrappedExpression.createDefaultCE(time), WrappedExpression.createDefaultCE(value), locked, false, true);
     }
 
@@ -64,14 +64,11 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
 
     MapCodec<ConsumptionEffect> codec();
 
-    record Potion(StatusEffect effect, WrappedExpression time, WrappedExpression value, boolean locked,
+    record Potion(RegistryEntry<StatusEffect> effect, WrappedExpression time, WrappedExpression value, boolean locked,
                   boolean particles, boolean showIcon) implements ConsumptionEffect {
         public static MapCodec<Potion> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
-                        Registries.STATUS_EFFECT.createEntryCodec().comapFlatMap(
-                                        x -> DataResult.success(x.value()),
-                                        x -> Registries.STATUS_EFFECT.getEntry(Registries.STATUS_EFFECT.getRawId(x)).get())
-                                .fieldOf("effect").forGetter(Potion::effect),
+                        Registries.STATUS_EFFECT.getEntryCodec().fieldOf("effect").forGetter(Potion::effect),
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("time").forGetter(Potion::time),
                         ExpressionUtil.COMMON_CE_EXPRESSION.optionalFieldOf("value", WrappedExpression.createDefaultCE("0")).forGetter(Potion::value),
                         Codec.BOOL.optionalFieldOf("locked", true).forGetter(Potion::locked),
@@ -79,7 +76,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                         Codec.BOOL.optionalFieldOf("show_icon", true).forGetter(Potion::showIcon)
                 ).apply(instance, Potion::new));
 
-        public static ConsumptionEffect of(StatusEffect effect, String time, String value, boolean locked, boolean particles, boolean showIcon) {
+        public static ConsumptionEffect of(RegistryEntry<StatusEffect> effect, String time, String value, boolean locked, boolean particles, boolean showIcon) {
             return new ConsumptionEffect.Potion(effect, WrappedExpression.createDefaultCE(time), WrappedExpression.createDefaultCE(value), locked, particles, showIcon);
         }
 
@@ -284,6 +281,40 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
 
             if (value >= 0) {
                 AlcoholManager.of(user).addDelayedEffect((int) value, age, quality, this.effects);
+            }
+        }
+
+        @Override
+        public MapCodec<ConsumptionEffect> codec() {
+            return (MapCodec<ConsumptionEffect>) (Object) CODEC;
+        }
+    }
+
+    record Attributes(WrappedExpression time, List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> effects) implements ConsumptionEffect {
+        public static MapCodec<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> ATTRIBUTE_PAIR = Codec.mapPair(
+                Registries.ATTRIBUTE.getEntryCodec().fieldOf("type"),
+                EntityAttributeModifier.MAP_CODEC);
+
+
+        public static MapCodec<Attributes> CODEC = RecordCodecBuilder.mapCodec(instance ->
+                instance.group(
+                        ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("time").forGetter(Attributes::time),
+                        Codec.list(ATTRIBUTE_PAIR.codec()).fieldOf("entries").forGetter(Attributes::effects)
+                ).apply(instance, Attributes::new));
+
+        public static ConsumptionEffect of(List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> effects, String time) {
+            return new Attributes(WrappedExpression.createDefaultCE(time), effects);
+        }
+
+        public void apply(LivingEntity user, double age, double quality) {
+            var value = this.time.expression()
+                    .setVariable(ExpressionUtil.AGE_KEY, age)
+                    .setVariable(ExpressionUtil.QUALITY_KEY, quality)
+                    .setVariable(ExpressionUtil.USER_ALCOHOL_LEVEL_KEY, AlcoholManager.of(user).getModifiedAlcoholLevel())
+                    .evaluate() * 20;
+
+            if (value >= 0) {
+                AlcoholManager.of(user).addTimedAttributes((int) value, age, quality, this.effects);
             }
         }
 

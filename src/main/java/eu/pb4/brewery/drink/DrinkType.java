@@ -7,6 +7,7 @@ import eu.pb4.brewery.other.WrappedText;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.minecraft.block.Block;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -148,16 +149,16 @@ public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals,
 
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public record ItemLookData(Item item, Optional<NbtCompound> extraNbt, Optional<PolymerModelData> model) {
+    public record ItemLookData(Item item, Optional<ComponentMap> components, Optional<PolymerModelData> model) {
         public static final ItemLookData DEFAULT = new ItemLookData(Items.POTION, Optional.empty(), Optional.empty());
         public static Codec<ItemLookData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Registries.ITEM.getCodec().optionalFieldOf("item", Items.POTION).forGetter(ItemLookData::item),
-                NbtCompound.CODEC.optionalFieldOf("nbt").forGetter(ItemLookData::extraNbt),
+                ComponentMap.CODEC.optionalFieldOf("components").forGetter(ItemLookData::components),
                 Identifier.CODEC.optionalFieldOf("model")
                         .forGetter(x -> x.model.map(PolymerModelData::modelPath))
         ).apply(instance, ItemLookData::create));
 
-        private static ItemLookData create(Item item, Optional<NbtCompound> nbtCompound, Optional<Identifier> identifier) {
+        private static ItemLookData create(Item item, Optional<ComponentMap> nbtCompound, Optional<Identifier> identifier) {
             return new ItemLookData(item, nbtCompound, identifier.map(value -> PolymerResourcePackUtils.requestModel(item, value)));
         }
     }

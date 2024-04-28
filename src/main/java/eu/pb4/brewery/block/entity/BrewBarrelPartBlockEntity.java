@@ -1,11 +1,13 @@
 package eu.pb4.brewery.block.entity;
 
+import eu.pb4.brewery.other.LegacyNbtHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,16 +19,16 @@ public final class BrewBarrelPartBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         if (this.container != null) {
-            nbt.put("Container", NbtHelper.fromBlockPos(this.container));
+            nbt.put("Container", LegacyNbtHelper.fromBlockPos(this.container));
         }
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
+    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         if (nbt.contains("Container", NbtElement.COMPOUND_TYPE)) {
-            this.container = NbtHelper.toBlockPos(nbt.getCompound("Container"));
+            this.container = LegacyNbtHelper.toBlockPos(nbt.getCompound("Container"));
         }
     }
 

@@ -2,6 +2,7 @@ package eu.pb4.brewery.item.debug;
 
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.TickableContents;
+import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.item.*;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -20,7 +21,7 @@ public class BlockTickerItem extends Item implements PolymerItem {
         var be = context.getWorld().getBlockEntity(context.getBlockPos());
 
         if (be instanceof TickableContents tickableContents) {
-            tickableContents.tickContents(context.getStack().getOrCreateNbt().getInt("TickCount"));
+            tickableContents.tickContents(context.getStack().getOrDefault(BrewComponents.TICK_COUNT, 0));
         }
 
         return super.useOnBlock(context);
@@ -28,7 +29,7 @@ public class BlockTickerItem extends Item implements PolymerItem {
 
     @Override
     public Text getName(ItemStack stack) {
-        var tick = stack.getOrCreateNbt().getInt("TickCount");
+        var tick = stack.getOrDefault(BrewComponents.TICK_COUNT, 0);
         return Text.literal("debug/BlockTickerItem [" + tick + " ticks | "
                 + ((int) (tick / 20d / 60d * 100) / 100d) + " minutes | "
                 + ((int) (tick / 24000d * 100) / 100d) + " days]");
@@ -41,7 +42,7 @@ public class BlockTickerItem extends Item implements PolymerItem {
 
     public ItemStack create(int ticks) {
         var stack = new ItemStack(this);
-        stack.getOrCreateNbt().putInt("TickCount", ticks);
+        stack.set(BrewComponents.TICK_COUNT, ticks);
         return stack;
     }
 

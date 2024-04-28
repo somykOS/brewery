@@ -8,6 +8,7 @@ import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -35,6 +36,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
         if (user instanceof ServerPlayerEntity player) {
+            new IndexGui(player, hand).open();
             new IndexGui(player, hand).open();
             return TypedActionResult.success(user.getStackInHand(hand), true);
         }
@@ -133,6 +135,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         if (!indexEntries.isEmpty()) {
             builder.addPage(indexEntries.toArray(new Text[0]));
         }
+        builder.setComponent(DataComponentTypes.WRITTEN_BOOK_CONTENT, builder.getComponent(DataComponentTypes.WRITTEN_BOOK_CONTENT).asResolved());
 
         IndexGui.book = builder.asStack();
     }
@@ -236,7 +239,8 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             super(player, book);
             this.stack = player.getStackInHand(hand);
             this.hand = hand;
-            this.setPage(Math.min(stack.getOrCreateNbt().getInt("Page"), book.getNbt().getList("pages", NbtElement.STRING_TYPE).size() - 1));
+            this.setPage(Math.min(stack.getOrDefault(BrewComponents.BOOK_PAGE, 0),
+                    book.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).getPages(false).size()));
         }
 
         @Override
@@ -257,8 +261,8 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
                     if (id != null) {
                         this.player.server.execute(() -> {
-                            this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-                            new BrewGui(player, id, true, () -> this.open()).open();
+                            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+                            new BrewGui(player, id, true, this::open).open();
                         });
                     }
                 }
@@ -278,10 +282,10 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         @Override
         public void setPage(int page) {
             super.setPage(page);
-            this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
 
             if (this.stack == this.player.getStackInHand(hand)) {
-                this.stack.getOrCreateNbt().putInt("Page", page);
+                this.stack.set(BrewComponents.BOOK_PAGE, page);
             }
         }
     }
@@ -300,7 +304,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         @Override
         public void setPage(int page) {
             super.setPage(page);
-            this.player.playSound(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
         }
 
         @Override

@@ -15,7 +15,7 @@
 
   "license": "LGPLv3",
   "icon": "assets/brewery/icon.png",
-
+  "accessWidener": "brewery.accesswidener",
   "environment": "*",
   "entrypoints": {
     "main": [

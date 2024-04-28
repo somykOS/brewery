@@ -4,15 +4,20 @@ import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.drink.AlcoholManager;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
+import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.advancement.criterion.Criteria;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
+import net.minecraft.component.type.FoodComponent;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
@@ -20,13 +25,13 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
 public class DrinkItem extends Item implements PolymerItem {
     public DrinkItem(Settings settings) {
@@ -107,13 +112,17 @@ public class DrinkItem extends Item implements PolymerItem {
                 return Text.translatable("item.brewery.ingredient_mixture_specific", type.name().text());
             }
         } else {
-            var id = stack.hasNbt() ? stack.getNbt().getString(DrinkUtils.TYPE_NBT) : null;
+            var id = DrinkUtils.getType(stack);
 
-            if (id == null || id.isEmpty()) {
-                id = "<Unknown>";
+            Text text;
+
+            if (id != null) {
+                text = id.name().text();
+            } else {
+                text = Text.literal("<Unknown>");
             }
 
-            return Text.translatable(this.getTranslationKey(), id);
+            return Text.translatable(this.getTranslationKey(), text);
         }
     }
 
@@ -121,8 +130,9 @@ public class DrinkItem extends Item implements PolymerItem {
         return this.getTranslationKey();
     }
 
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        if (stack.hasNbt() && world != null) {
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType typex) {
+        var world = BreweryInit.getOverworld();
+        if (world != null) {
             var type = DrinkUtils.getType(stack);
             if (type != null && type.showQuality() && world.getGameRules().getBoolean(BrewGameRules.SHOW_QUALITY)) {
                 var quality
@@ -163,7 +173,7 @@ public class DrinkItem extends Item implements PolymerItem {
 
             if (BreweryInit.DISPLAY_DEV) {
                 tooltip.add(Text.literal("== DEV ==").formatted(Formatting.AQUA));
-                tooltip.add(Text.literal("BrewType: ").append(stack.getNbt().getString(DrinkUtils.TYPE_NBT)).formatted(Formatting.GRAY));
+                tooltip.add(Text.literal("BrewType: ").append(stack.getOrDefault(BrewComponents.BREW_DATA, BrewData.DEFAULT).type().toString()).formatted(Formatting.GRAY));
                 tooltip.add(Text.literal("BrewQuality: ").append("" + DrinkUtils.getQuality(stack)).formatted(Formatting.GRAY));
                 tooltip.add(Text.literal("BrewAge: ").append("" + DrinkUtils.getAgeInTicks(stack)).formatted(Formatting.GRAY));
                 tooltip.add(Text.literal("BrewDistillated: ").append("" + DrinkUtils.getDistillationStatus(stack)).formatted(Formatting.GRAY));
@@ -182,24 +192,25 @@ public class DrinkItem extends Item implements PolymerItem {
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
-        var out = PolymerItem.super.getPolymerItemStack(itemStack, context, player);
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType context, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player) {
+        var out = PolymerItem.super.getPolymerItemStack(itemStack, context, lookup, player);
         var type = DrinkUtils.getType(itemStack);
 
         if (type != null) {
+            int color;
             if (type.isFinished(itemStack)) {
-                out.getOrCreateNbt().putInt("CustomPotionColor", type.color().getRgb());
+                color = type.color().getRgb();
             } else {
-                out.getOrCreateNbt().putInt("CustomPotionColor", ColorHelper.Argb.mixColor(type.color().getRgb(), 0x385dc6));
-
+                color = ColorHelper.Argb.mixColor(type.color().getRgb(), 0x385dc6);
             }
+            out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(), Optional.of(color), List.of()));
 
-            if (type.visuals().extraNbt().isPresent()) {
-                out.getOrCreateNbt().copyFrom(type.visuals().extraNbt().get());
+            if (type.visuals().components().isPresent()) {
+                out.applyComponentsFrom(type.visuals().components().get());
             }
 
             if (type.visuals().model().isPresent()) {
-                out.getOrCreateNbt().putInt("CustomModelData", type.visuals().model().get().value());
+                out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(type.visuals().model().get().value()));
             }
         }
 

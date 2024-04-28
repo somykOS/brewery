@@ -89,19 +89,14 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         var be = world.getBlockEntity(pos);
         if (be instanceof BrewCauldronBlockEntity blockEntity) {
-            return blockEntity.onUse(player, hand) ? ActionResult.SUCCESS : ActionResult.FAIL;
+            return blockEntity.onUse(player) ? ActionResult.SUCCESS : ActionResult.FAIL;
         }
 
 
-        return super.onUse(state, world, pos, player, hand, hit);
-    }
-
-    @Override
-    public Block getPolymerBlock(BlockState state) {
-        return Blocks.WATER_CAULDRON;
+        return super.onUse(state, world, pos, player, hit);
     }
 
     @Override

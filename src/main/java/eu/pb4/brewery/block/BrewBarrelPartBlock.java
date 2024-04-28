@@ -52,33 +52,26 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
     }
 
     @Override
-    public Block getPolymerBlock(BlockState state) {
-        return state.get(SHAPE).state.apply(this.barrelMaterial).getBlock();
-    }
-
-    @Override
     public BlockState getPolymerBlockState(BlockState state) {
         return state.get(SHAPE).state.apply(this.barrelMaterial);
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (hand == Hand.MAIN_HAND) {
-            var blockEntity = world.getBlockEntity(pos);
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        var blockEntity = world.getBlockEntity(pos);
 
-            if (blockEntity instanceof BrewBarrelPartBlockEntity redirect && redirect.getContainer() != null) {
-                blockEntity = world.getBlockEntity(redirect.getContainer());
-            }
+        if (blockEntity instanceof BrewBarrelPartBlockEntity redirect && redirect.getContainer() != null) {
+            blockEntity = world.getBlockEntity(redirect.getContainer());
+        }
 
 
-            if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock && !(player.squaredDistanceTo((double)pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) > 64.0D)) {
-                barrelBlock.openGui((ServerPlayerEntity) player);
-                world.playSound(null,
-                        barrelBlock.getPos().getX() + 0.5,
-                        barrelBlock.getPos().getY() + 0.5,
-                        barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
-                return ActionResult.SUCCESS;
-            }
+        if (blockEntity instanceof BrewBarrelSpigotBlockEntity barrelBlock && !(player.squaredDistanceTo((double)pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) > 64.0D)) {
+            barrelBlock.openGui((ServerPlayerEntity) player);
+            world.playSound(null,
+                    barrelBlock.getPos().getX() + 0.5,
+                    barrelBlock.getPos().getY() + 0.5,
+                    barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
+            return ActionResult.SUCCESS;
         }
         return ActionResult.PASS;
     }

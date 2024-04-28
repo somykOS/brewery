@@ -9,6 +9,7 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.polydex.api.v1.recipe.*;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.elements.*;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
@@ -112,7 +113,7 @@ public class PolydexCompatImpl {
 
         @Override
         public ItemStack entryIcon(@Nullable PolydexEntry polydexEntry, ServerPlayerEntity serverPlayerEntity) {
-            return DrinkUtils.createDrink(this.typeId, 0, 10, this.type.distillationRuns(), new Identifier("air"));
+            return DrinkUtils.createDrink(this.typeId, 0, 10, this.type.distillationRuns(), Blocks.AIR);
         }
 
         @Override
@@ -136,7 +137,7 @@ public class PolydexCompatImpl {
             }
 
             int key = 2;
-            layer.setOutput(4, 3, DrinkUtils.createDrink(this.typeId, 0, 10, this.type.distillationRuns(), new Identifier("air")));
+            layer.setOutput(4, 3, DrinkUtils.createDrink(this.typeId, 0, 10, this.type.distillationRuns(), Blocks.AIR));
 
             if (!type.barrelInfo().isEmpty()) {
                 ItemStack[] element;

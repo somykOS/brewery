@@ -12,6 +12,7 @@ import eu.pb4.brewery.drink.AlcoholValueEffect;
 import eu.pb4.brewery.drink.DefaultDefinitions;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.item.BookOfBreweryItem;
+import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
@@ -31,6 +32,8 @@ import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -49,11 +52,18 @@ public class BreweryInit implements ModInitializer {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
-    public static final boolean DISPLAY_DEV = IS_DEV && false;
+    public static final boolean DISPLAY_DEV = IS_DEV && true;
     public static final boolean USE_GENERATOR = IS_DEV && true;
+
+    private static World overworld = null;
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);
+    }
+
+    @Nullable
+    public static World getOverworld() {
+        return overworld;
     }
 
     @Override
@@ -61,6 +71,7 @@ public class BreweryInit implements ModInitializer {
         GenericModInfo.build(FabricLoader.getInstance().getModContainer(MOD_ID).get());
 
         BrewBlocks.register();
+        BrewComponents.register();
         BrewBlockEntities.register();
         BrewItems.register();
         BrewGameRules.register();
@@ -71,7 +82,13 @@ public class BreweryInit implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(id, Event.DEFAULT_PHASE);
         ServerLifecycleEvents.SERVER_STARTED.register(id, BreweryInit::loadDrinks);
-        ServerLifecycleEvents.SERVER_STARTED.register((s) -> CardboardWarning.checkAndAnnounce());
+        ServerLifecycleEvents.SERVER_STARTED.register((s) -> {
+            CardboardWarning.checkAndAnnounce();
+            overworld = s.getOverworld();
+        });
+        ServerLifecycleEvents.SERVER_STOPPED.register((s) -> {
+            overworld = null;
+        });
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(id, Event.DEFAULT_PHASE);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(id, (x, y, z) -> BreweryInit.loadDrinks(x));
 
@@ -107,7 +124,7 @@ public class BreweryInit implements ModInitializer {
             var id = new Identifier(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
 
             try {
-                var drinkType = DrinkType.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).getOrThrow(false, (x) -> {});
+                var drinkType = DrinkType.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).getOrThrow();
 
                 addDrink(id, drinkType.getFirst());
             } catch (Throwable e) {
@@ -147,8 +164,7 @@ public class BreweryInit implements ModInitializer {
                     addDrink(id, drinkType);
 
                     try {
-                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(ops, drinkType).getOrThrow(false, (x) -> {
-                        })));
+                        Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(ops, drinkType).getOrThrow()));
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }

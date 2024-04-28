@@ -4,10 +4,14 @@ import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.drink.ExpressionUtil;
+import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.IngredientMixtureItem;
+import eu.pb4.brewery.item.comp.BrewData;
 import net.minecraft.block.entity.BrewingStandBlockEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -18,10 +22,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
+
 @Mixin(BrewingStandBlockEntity.class)
-public abstract class BrewingStandBlockEntityMixin {
+public abstract class BrewingStandBlockEntityMixin implements Inventory {
     @Inject(method = "canCraft", at = @At("HEAD"), cancellable = true)
-    private static void brewery$canCraft(DefaultedList<ItemStack> slots, CallbackInfoReturnable<Boolean> cir) {
+    private static void brewery$canCraft(BrewingRecipeRegistry brewingRecipeRegistry, DefaultedList<ItemStack> slots, CallbackInfoReturnable<Boolean> cir) {
         if (slots.get(3).isEmpty()) {
             for (var i = 0; i < 3; i++) {
                 if (DrinkUtils.canBeDistillated(slots.get(i))) {
@@ -50,7 +56,7 @@ public abstract class BrewingStandBlockEntityMixin {
                             for (var type : types) {
                                 if (type.requireDistillation()) {
                                     var q = type.cookingQualityMult().expression()
-                                            .setVariable(ExpressionUtil.AGE_KEY, stack.getNbt().getDouble(DrinkUtils.AGE_COOK_NBT) / 20d)
+                                            .setVariable(ExpressionUtil.AGE_KEY, DrinkUtils.getAgeInSeconds(stack))
                                             .evaluate();
 
                                     if (q > quality) {
@@ -64,17 +70,13 @@ public abstract class BrewingStandBlockEntityMixin {
                                 slots.set(i, new ItemStack(BrewItems.FAILED_DRINK_ITEM));
                             } else {
                                 var drink = new ItemStack(BrewItems.DRINK_ITEM);
-                                drink.setNbt(stack.getNbt());
-                                drink.getOrCreateNbt().putString(DrinkUtils.TYPE_NBT, BreweryInit.DRINK_TYPE_ID.get(match).toString());
-
-                                drink.getOrCreateNbt().putDouble(DrinkUtils.QUALITY_NBT, quality * 10);
-
-                                drink.getOrCreateNbt().putInt(DrinkUtils.DISTILLATED_NBT, drink.getOrCreateNbt().getInt(DrinkUtils.DISTILLATED_NBT) + 1);
+                                drink.set(BrewComponents.COOKING_DATA, stack.get(BrewComponents.COOKING_DATA));
+                                drink.set(BrewComponents.BREW_DATA, new BrewData(Optional.of(BreweryInit.DRINK_TYPE_ID.get(match)), quality * 10, "", 1, 0));
                                 slots.set(i, drink);
                             }
                         }
                     } else {
-                        stack.getOrCreateNbt().putInt(DrinkUtils.DISTILLATED_NBT, stack.getOrCreateNbt().getInt(DrinkUtils.DISTILLATED_NBT) + 1);
+                        stack.apply(BrewComponents.BREW_DATA, BrewData.DEFAULT, BrewData::distillate);
                     }
                 }
             }
@@ -83,9 +85,6 @@ public abstract class BrewingStandBlockEntityMixin {
             ci.cancel();
         }
     }
-
-    @Shadow
-    public abstract ItemStack getStack(int slot);
 
     @Inject(method = "isValid", at = @At("TAIL"), cancellable = true)
     private void brewery$isValid(int slot, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {

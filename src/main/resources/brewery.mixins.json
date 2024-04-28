@@ -10,7 +10,10 @@
     "MilkBucketItemMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
-    "StatusEffectInstanceMixin"
+    "StatusEffectInstanceMixin",
+    "datafixer.ItemStackComponentizationFixMixin",
+    "datafixer.Schema1460Mixin",
+    "datafixer.Schema3818_3Mixin"
   ],
   "injectors": {
     "defaultRequire": 1

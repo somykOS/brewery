@@ -18,6 +18,7 @@ import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
@@ -138,8 +139,7 @@ public class BrewCommands {
 
             DefaultDefinitions.createBrews((key, type) -> {
                 try {
-                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow(false, (x) -> {
-                    })));
+                    Files.writeString(dir.resolve(key + ".json"), gson.toJson(DrinkType.CODEC.encodeStart(JsonOps.INSTANCE, type).getOrThrow()));
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
@@ -191,7 +191,7 @@ public class BrewCommands {
             distillated = 0;
         }
 
-        context.getSource().getPlayerOrThrow().giveItemStack(DrinkUtils.createDrink(id, age, quality, distillated, new Identifier("air")));
+        context.getSource().getPlayerOrThrow().giveItemStack(DrinkUtils.createDrink(id, age, quality, distillated, Blocks.AIR));
 
         return 1;
     }

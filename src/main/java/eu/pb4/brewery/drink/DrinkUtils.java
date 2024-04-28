@@ -1,10 +1,14 @@
 package eu.pb4.brewery.drink;
 
 import eu.pb4.brewery.BreweryInit;
+import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
+import eu.pb4.brewery.item.comp.BrewData;
+import eu.pb4.brewery.item.comp.CookingData;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.Registries;
@@ -13,33 +17,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class DrinkUtils {
-    public static final String TYPE_NBT = "BrewType";
-    public static final String QUALITY_NBT = "BrewQuality";
-    public static final String AGE_NBT = "BrewAge";
-    public static final String AGE_COOK_NBT = "BrewCookAge";
-    public static final String QUALITY_MULT_NBT = "BrewQualityMult";
-    public static final String BARREL_TYPE_NBT = "BrewBarrelType";
-    public static final String DISTILLATED_NBT = "BrewDistillated";
-    public static final String HEAT_SOURCE_NBT = "BrewHeatSource";
-
     @Nullable
     public static DrinkType getType(ItemStack stack) {
-        if (stack.isOf(BrewItems.DRINK_ITEM) && stack.hasNbt()) {
-            var id = Identifier.tryParse(stack.getNbt().getString(TYPE_NBT));
-
-            var type = BreweryInit.DRINK_TYPES.get(id);
-
-            if (type != null) {
-                return type;
-            } else if (id.getPath().startsWith("drinks/")) {
-                // Bug in 0.1.0 caused drinks to have wrong ids assigned (didn't cause functionality loss). So here is the patch
-                // to handle these old drinks.
-                var id2 = new Identifier(id.getNamespace(), id.getPath().substring("drinks/".length()));
-                type = BreweryInit.DRINK_TYPES.get(id2);
-
-                return type;
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            if (Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
+                return BreweryInit.DRINK_TYPES.get(Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().get());
             }
         }
 
@@ -47,26 +33,26 @@ public class DrinkUtils {
     }
 
     public static double getQuality(ItemStack stack) {
-        if (stack.isOf(BrewItems.DRINK_ITEM) && stack.hasNbt()) {
-            return stack.getNbt().getDouble(QUALITY_NBT);
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).quality();
         }
 
         return -1;
     }
 
     public static String getBarrelType(ItemStack stack) {
-        if (stack.isOf(BrewItems.DRINK_ITEM) && stack.hasNbt()) {
-            return stack.getNbt().getString(BARREL_TYPE_NBT);
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).barrelType();
         }
 
         return "";
     }
 
     public static boolean getDistillationStatus(ItemStack stack) {
-        if (stack.hasNbt()) {
-            var type = DrinkUtils.getType(stack);
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            var type = getType(stack);
             if (type != null) {
-                return stack.getNbt().getInt(DISTILLATED_NBT) >= type.distillationRuns();
+                return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).distillations() > type.distillationRuns();
             }
         }
 
@@ -75,8 +61,8 @@ public class DrinkUtils {
 
     @Nullable
     public static Block getHeatSource(ItemStack stack) {
-        if (stack.hasNbt() && stack.getNbt().contains(HEAT_SOURCE_NBT)) {
-            return Registries.BLOCK.get(Identifier.tryParse(stack.getNbt().getString(HEAT_SOURCE_NBT)));
+        if (stack.contains(BrewComponents.COOKING_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).heatSource();
         }
 
         return Blocks.FIRE;
@@ -93,8 +79,8 @@ public class DrinkUtils {
     }
 
     public static double getAgeInTicks(ItemStack stack, double defaultValue) {
-        if (stack.hasNbt() && stack.getNbt().contains(AGE_NBT, NbtElement.NUMBER_TYPE)) {
-            return stack.getNbt().getDouble(AGE_NBT);
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).age();
         }
 
         return defaultValue;
@@ -104,34 +90,13 @@ public class DrinkUtils {
         return getAgeInTicks(stack) / 20d;
     }
 
-    public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, Identifier heatingSource) {
+    public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, Block heatingSource) {
         var stack = new ItemStack(BrewItems.DRINK_ITEM);
 
-        stack.getOrCreateNbt().putInt(AGE_NBT, age);
-        stack.getOrCreateNbt().putDouble(QUALITY_NBT, quality);
-        stack.getOrCreateNbt().putString(TYPE_NBT, type.toString());
-        stack.getOrCreateNbt().putInt(DISTILLATED_NBT, distillated);
-        stack.getOrCreateNbt().putString(HEAT_SOURCE_NBT, heatingSource.toString());
+        stack.set(BrewComponents.BREW_DATA, new BrewData(Optional.of(type), quality, "", distillated, age));
+        stack.set(BrewComponents.COOKING_DATA, new CookingData(0, List.of(), heatingSource));
 
         return stack;
-    }
-
-    public static ItemStack createDrink(Identifier type, double qualityMultiplier) {
-        var stack = new ItemStack(BrewItems.DRINK_ITEM);
-
-        stack.getOrCreateNbt().putInt(AGE_NBT, 0);
-        stack.getOrCreateNbt().putString(TYPE_NBT, type.toString());
-        stack.getOrCreateNbt().putDouble(QUALITY_MULT_NBT, qualityMultiplier);
-
-        return stack;
-    }
-
-    public static double getIngredientMultiplier(ItemStack stack) {
-        if (stack.hasNbt() && stack.getNbt().contains(QUALITY_MULT_NBT, NbtElement.NUMBER_TYPE)) {
-            return stack.getNbt().getDouble(QUALITY_MULT_NBT);
-        }
-
-        return 1;
     }
 
     public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType, Block heatSource) {
