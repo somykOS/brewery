@@ -52,7 +52,7 @@ public class DrinkUtils {
         if (stack.contains(BrewComponents.BREW_DATA)) {
             var type = getType(stack);
             if (type != null) {
-                return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).distillations() > type.distillationRuns();
+                return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).distillations() >= type.distillationRuns();
             }
         }
 

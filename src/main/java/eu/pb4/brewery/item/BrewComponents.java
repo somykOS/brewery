@@ -3,6 +3,7 @@ package eu.pb4.brewery.item;
 import com.mojang.serialization.Codec;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
+import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import net.minecraft.component.DataComponentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -26,6 +27,7 @@ public class BrewComponents {
     }
 
     private static <T> DataComponentType<T> register(String path, DataComponentType<T> block) {
+        PolymerItemUtils.markAsPolymer(block);
         return Registry.register(Registries.DATA_COMPONENT_TYPE, id(path), block);
     }
 }

@@ -8,6 +8,7 @@ import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.IngredientMixtureItem;
 import eu.pb4.brewery.item.comp.BrewData;
+import eu.pb4.brewery.item.comp.CookingData;
 import net.minecraft.block.entity.BrewingStandBlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -56,7 +57,7 @@ public abstract class BrewingStandBlockEntityMixin implements Inventory {
                             for (var type : types) {
                                 if (type.requireDistillation()) {
                                     var q = type.cookingQualityMult().expression()
-                                            .setVariable(ExpressionUtil.AGE_KEY, DrinkUtils.getAgeInSeconds(stack))
+                                            .setVariable(ExpressionUtil.AGE_KEY, stack.getOrDefault(BrewComponents.COOKING_DATA, CookingData.DEFAULT).time() / 20)
                                             .evaluate();
 
                                     if (q > quality) {
