@@ -139,7 +139,7 @@ public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals,
         public static Codec<BarrelInfo> CODEC_V1 = RecordCodecBuilder.create(instance -> instance.group(TYPE_CODEC.fieldOf("type").forGetter(BarrelInfo::type), ExpressionUtil.COMMON_EXPRESSION.fieldOf("quality_value").forGetter(BarrelInfo::qualityChange), Codecs.POSITIVE_INT.fieldOf("reveal_time").forGetter(BarrelInfo::baseTime)).apply(instance, BarrelInfo::new));
 
         public static BarrelInfo of(String type, String qualityChange, int baseTime) {
-            return of(type.equals("*") ? ANY : new Identifier(type), qualityChange, baseTime);
+            return of(type.equals("*") ? ANY : Identifier.of(type), qualityChange, baseTime);
         }
 
         public static BarrelInfo of(Identifier type, String qualityChange, int baseTime) {

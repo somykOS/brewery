@@ -58,7 +58,7 @@ public class BreweryInit implements ModInitializer {
     private static World overworld = null;
 
     public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+        return Identifier.of(MOD_ID, path);
     }
 
     @Nullable
@@ -121,7 +121,7 @@ public class BreweryInit implements ModInitializer {
         clearData();
 
         for (var res : server.getResourceManager().findResources("brewery_drinks", (x) -> x.getPath().endsWith(".json")).entrySet()) {
-            var id = new Identifier(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
+            var id = Identifier.of(res.getKey().getNamespace(), res.getKey().getPath().substring("brewery_drinks/".length(), res.getKey().getPath().length() - 5));
 
             try {
                 var drinkType = DrinkType.CODEC.decode(ops, JsonParser.parseReader(res.getValue().getReader())).getOrThrow();
@@ -160,7 +160,7 @@ public class BreweryInit implements ModInitializer {
 
 
                 DefaultDefinitions.createBrews((key, drinkType) -> {
-                    var id = new Identifier("brewery:" + key);
+                    var id = Identifier.of("brewery", key);
                     addDrink(id, drinkType);
 
                     try {

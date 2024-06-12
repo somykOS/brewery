@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.duck.LivingEntityExt;
 import eu.pb4.brewery.other.BrewGameRules;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -15,6 +16,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,7 @@ public final class AlcoholManager {
         }
     }
 
-    public void eat(ItemStack stack) {
+    public void eat(ItemStack stack, @Nullable FoodComponent foodComponent) {
         if (this.alcoholLevel > 0) {
             this.alcoholLevel -= BreweryInit.ITEM_ALCOHOL_REMOVAL_VALUES.getDouble(stack.getItem());
         }
@@ -105,7 +107,7 @@ public final class AlcoholManager {
         if (--timedAttributes.ticksLeft > 0) {
             for (var effect : timedAttributes.attributes) {
                 var x = this.entity.getAttributeInstance(effect.getFirst());
-                if (x != null && !x.hasModifier(effect.getSecond())) {
+                if (x != null && !x.hasModifier(effect.getSecond().id())) {
                     x.addTemporaryModifier(effect.getSecond());
                 }
             }
@@ -115,7 +117,7 @@ public final class AlcoholManager {
 
         for (var effect : timedAttributes.attributes) {
             var x = this.entity.getAttributeInstance(effect.getFirst());
-            if (x != null && x.hasModifier(effect.getSecond())) {
+            if (x != null && x.hasModifier(effect.getSecond().id())) {
                 x.removeModifier(effect.getSecond());
             }
         }
@@ -184,7 +186,7 @@ public final class AlcoholManager {
             var ops = RegistryOps.of(NbtOps.INSTANCE, lookup);
 
             for (var effect : nbt.getList("entries", NbtElement.COMPOUND_TYPE)) {
-                list.add(ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec().decode(ops, effect).getOrThrow().getFirst());
+                ConsumptionEffect.Attributes.ATTRIBUTE_PAIR.codec().decode(ops, effect).ifSuccess(x -> list.add(x.getFirst()));
             }
 
             return new TimedAttributes(ticks, quality, age, list);

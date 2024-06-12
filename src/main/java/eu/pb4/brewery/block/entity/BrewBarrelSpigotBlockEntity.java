@@ -117,7 +117,7 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
             this.parts.add(part);
         }
 
-        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(new Identifier(nbt.getString("BarrelType")));
+        this.material = BrewBlocks.BARREL_MATERIAL_MAP.get(Identifier.of(nbt.getString("BarrelType")));
         this.lastTicked = nbt.getLong("LastTicked");
     }
 

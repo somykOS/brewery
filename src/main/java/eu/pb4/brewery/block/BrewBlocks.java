@@ -52,7 +52,7 @@ public class BrewBlocks {
     }
 
     private static void registerBarrel(String identifier, Block planks, Block stairsBlock, Block fenceBlock) {
-        registerBarrel(new Identifier(identifier), Text.translatable("container.brewery." + identifier + "_barrel"), planks, stairsBlock, fenceBlock);
+        registerBarrel(Identifier.of(identifier), Text.translatable("container.brewery." + identifier + "_barrel"), planks, stairsBlock, fenceBlock);
     }
 
     public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.create()));

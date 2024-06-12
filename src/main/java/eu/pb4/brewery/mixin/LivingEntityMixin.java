@@ -2,6 +2,7 @@ package eu.pb4.brewery.mixin;
 
 import eu.pb4.brewery.drink.AlcoholManager;
 import eu.pb4.brewery.duck.LivingEntityExt;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -50,7 +51,7 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
     }
 
     @Inject(method = "eatFood", at = @At("TAIL"))
-    private void brewery$eat(World world, ItemStack stack, CallbackInfoReturnable<ItemStack> cir) {
-        this.brewery$alcoholManager.eat(stack);
+    private void brewery$eat(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
+        this.brewery$alcoholManager.eat(stack, foodComponent);
     }
 }
