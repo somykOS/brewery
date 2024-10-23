@@ -31,7 +31,7 @@ Main drink format
 ```json5
 {
   // Current version of the format. It's required
-  "version": 2,
+  "version": 3,
   // Name of the drink
   "name": {/* TEXT */},
   // Color of the drink, 
@@ -41,7 +41,7 @@ Main drink format
     // Changes base item
     "item": "minecraft:potion",
     // Additional nbt data that should be attached to item. Optional
-    "nbt": {/* ITEM NBT DATA */},
+    "components": {/* ITEM COMPONENT DATA */},
     // Model identifier used for server resource pack. Optional
     "model": "minecraft:item/dragon_breath"
   },
@@ -105,25 +105,37 @@ Main drink format
 
 All expressions have access to `age` and `quality` variables
 
+## Attribute
+Applies (temporary) attributes to player.
+More info about functionality here: https://minecraft.wiki/w/Attribute
+```json5
+{
+  "type": "attributes",
+  // Time of the effect, in seconds. If lower than 0, it's not applied
+  "time": {/* EXPRESSION */},
+  "entries":[
+    {
+      // Just a name for the attribute. Follow the namespace rules
+      "id": {/* unique ID */},
+      // Flat value that's used for modifying the attribute. Can be negative.
+      "amount": {/* NUMBER */},
+      // See the wiki.
+      "operation": {/* MODIFIER OPERATION */},
+      // The type of attribute you will be changing. See the wiki or "/attribute" command.
+      "type": {/* ID of attribute */}
+    }
+  ]
+}
+```
+
+
 ### Damage
 Applies damage to player
 ```json5
 {
-  "type": "damage", 
-  // Name of damage (uses vanilla translation system)
-  "name": {/* STRING */},
-  // Used to get damage applied to player.
-  "value": {/* EXPRESSION */},
-  // Makes it a magic attack, Optional (default true)
-  "magic": {/* BOOLEAN */},
-  // Makes it bypass armor, Optional (default true)
-  "bypass_armor": {/* BOOLEAN */},
-  // Makes it bypass protection, Optional (default true)
-  "bypass_protection": {/* BOOLEAN */},
-  // Makes it unblockable with shield, Optional (default true)
-  "unblockable": {/* BOOLEAN */},
-  // Makes it a fire damage, Optional (default false)
-  "fire": {/* BOOLEAN */}
+  "type": "damage",
+  "id": {/* ID of damage type, can be added with datapacks */},
+  "value": {/* EXPRESSION */}
 }
 ```
 
@@ -133,7 +145,7 @@ Applies effect specified time later
 {
   "type": "delayed",
   // Effects to apply
-  "effects": [{/* EFFECTS */}],
+  "entries": [{/* EFFECTS */}],
   // Expression for delay in seconds. If lower than 0, it's not applied
   "delay": {/* EXPRESSION */}
 }
@@ -188,7 +200,7 @@ Applies random effect from the list
 {
   "type": "random",
   // Effects to select from
-  "effects": [{/* EFFECTS */}],
+  "entries": [{/* EFFECTS */}],
   // Used to check if it should apply. If lower than 0, it's not applied, Optional
   "apply_check": {/* EXPRESSION */}
 }

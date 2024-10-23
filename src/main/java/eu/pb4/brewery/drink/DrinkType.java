@@ -4,7 +4,6 @@ import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.brewery.other.WrappedText;
-import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.minecraft.block.Block;
 import net.minecraft.component.ComponentMap;
@@ -35,6 +34,23 @@ public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals,
                         WrappedExpression cookingQualityMult, List<BrewIngredient> ingredients, int distillationRuns,
                         List<ConsumptionEffect> unfinishedEffects, Optional<DrinkInfo> info, boolean showQuality,
                         Optional<RegistryEntryList<Block>> heatSource) {
+    public static MapCodec<DrinkType> CODEC_V3 = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            WrappedText.CODEC.fieldOf("name").forGetter(DrinkType::name),
+            TextColor.CODEC.fieldOf("color").forGetter(DrinkType::color),
+            ItemLookData.CODEC.optionalFieldOf("visual", ItemLookData.DEFAULT).forGetter(DrinkType::visuals),
+            Codec.list(BarrelInfo.CODEC_V1).optionalFieldOf("barrel_definitions", List.of()).forGetter(DrinkType::barrelInfo),
+            ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("base_quality_value").forGetter(DrinkType::baseQuality),
+            ExpressionUtil.COMMON_EXPRESSION.fieldOf("alcoholic_value").forGetter(DrinkType::alcoholicValue),
+            Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("effects", new ArrayList<>()).forGetter(DrinkType::consumptionEffects),
+            ExpressionUtil.createCodec(ExpressionUtil.AGE_KEY).fieldOf("cooking_quality_multiplier").forGetter(DrinkType::cookingQualityMult),
+            Codec.list(BrewIngredient.CODEC_V1).optionalFieldOf("ingredients", new ArrayList<>()).forGetter(DrinkType::ingredients),
+            Codec.INT.optionalFieldOf("distillation_runs", 0).forGetter(DrinkType::distillationRuns),
+            Codec.list(ConsumptionEffect.CODEC).optionalFieldOf("unfinished_brew_effects", new ArrayList<>()).forGetter(DrinkType::unfinishedEffects),
+            DrinkInfo.CODEC.optionalFieldOf("book_information").forGetter(DrinkType::info),
+            Codec.BOOL.optionalFieldOf("show_quality", true).forGetter(DrinkType::showQuality),
+            RegistryCodecs.entryList(RegistryKeys.BLOCK).optionalFieldOf("required_heat_source").forGetter(DrinkType::heatSource)
+    ).apply(instance, DrinkType::new));
+
     public static MapCodec<DrinkType> CODEC_V2 = RecordCodecBuilder.mapCodec(instance -> instance.group(
             WrappedText.CODEC.fieldOf("name").forGetter(DrinkType::name),
             TextColor.CODEC.fieldOf("color").forGetter(DrinkType::color),
@@ -79,13 +95,14 @@ public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals,
             var version = ops.getNumberValue(input.get("version"), 0).intValue();
             return switch (version) {
                 case 1 -> DrinkType.CODEC_V1.decode(ops, input);
-                default -> DrinkType.CODEC_V2.decode(ops, input);
+                case 2 -> DrinkType.CODEC_V2.decode(ops, input);
+                default -> DrinkType.CODEC_V3.decode(ops, input);
             };
         }
 
         @Override
         public <T> RecordBuilder<T> encode(DrinkType input, DynamicOps<T> ops, RecordBuilder<T> prefix) {
-            return CODEC_V2.encode(input, ops, prefix.add("version", ops.createInt(2)));
+            return CODEC_V3.encode(input, ops, prefix.add("version", ops.createInt(2)));
         }
     });
 
@@ -104,7 +121,7 @@ public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals,
     }
 
     public static DrinkType create(Text name, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue, List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients, int distillationRuns, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info, TagKey<Block> heatSource) {
-        return create(name, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients, distillationRuns, unfinishedEffects, info, Optional.of(RegistryEntryList.of(Registries.BLOCK.getEntryOwner(), heatSource)));
+        return create(name, color, barrelInfo, quality, alcoholicValue, consumptionEffects, cookingTime, ingredients, distillationRuns, unfinishedEffects, info, Optional.of(RegistryEntryList.of(Registries.BLOCK, heatSource)));
     }
 
     public static DrinkType create(Text name, TextColor color, List<BarrelInfo> barrelInfo, String quality, String alcoholicValue, List<ConsumptionEffect> consumptionEffects, String cookingTime, List<BrewIngredient> ingredients, int distillationRuns, List<ConsumptionEffect> unfinishedEffects, DrinkInfo info, Optional<RegistryEntryList<Block>> heatSource) {
@@ -149,18 +166,13 @@ public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals,
 
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public record ItemLookData(Item item, Optional<ComponentMap> components, Optional<PolymerModelData> model) {
+    public record ItemLookData(Item item, Optional<ComponentMap> components, Optional<Identifier> model) {
         public static final ItemLookData DEFAULT = new ItemLookData(Items.POTION, Optional.empty(), Optional.empty());
         public static Codec<ItemLookData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Registries.ITEM.getCodec().optionalFieldOf("item", Items.POTION).forGetter(ItemLookData::item),
                 ComponentMap.CODEC.optionalFieldOf("components").forGetter(ItemLookData::components),
-                Identifier.CODEC.optionalFieldOf("model")
-                        .forGetter(x -> x.model.map(PolymerModelData::modelPath))
-        ).apply(instance, ItemLookData::create));
-
-        private static ItemLookData create(Item item, Optional<ComponentMap> nbtCompound, Optional<Identifier> identifier) {
-            return new ItemLookData(item, nbtCompound, identifier.map(value -> PolymerResourcePackUtils.requestModel(item, value)));
-        }
+                Identifier.CODEC.optionalFieldOf("model").forGetter(ItemLookData::model)
+        ).apply(instance, ItemLookData::new));
     }
 
     public record BrewIngredient(List<Item> items, int count, ItemStack returnedItemStack) {

@@ -16,6 +16,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -34,17 +35,19 @@ public final class AlcoholManager {
     }
 
     public void drink(DrinkType type, double quality, double alcoholicValue) {
-        var multiplier = this.entity.getWorld().getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
+        if (this.entity.getWorld() instanceof ServerWorld world) {
+            var multiplier = world.getGameRules().get(BrewGameRules.ALCOHOL_MULTIPLIER).get();
 
-        this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
-        if (this.quality == -1) {
-            this.quality = quality;
-        } else {
-            this.quality = (this.quality + quality) / 2;
+            this.alcoholLevel = Math.max(this.alcoholLevel + alcoholicValue * multiplier, alcoholicValue * multiplier);
+            if (this.quality == -1) {
+                this.quality = quality;
+            } else {
+                this.quality = (this.quality + quality) / 2;
+            }
         }
     }
 
-    public void eat(ItemStack stack, @Nullable FoodComponent foodComponent) {
+    public void eat(ItemStack stack) {
         if (this.alcoholLevel > 0) {
             this.alcoholLevel -= BreweryInit.ITEM_ALCOHOL_REMOVAL_VALUES.getDouble(stack.getItem());
         }

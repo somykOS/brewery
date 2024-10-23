@@ -3,6 +3,7 @@ package eu.pb4.brewery.block;
 import com.mojang.serialization.MapCodec;
 import eu.pb4.brewery.block.entity.BrewBarrelSpigotBlockEntity;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
+import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
@@ -12,12 +13,11 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.ModelTransformationMode;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -33,6 +33,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 public final class BrewSpigotBlock extends HorizontalFacingBlock implements PolymerBlock, BlockEntityProvider, BlockWithElementHolder {
     private static final MapCodec<BrewSpigotBlock> CODEC = createCodec(BrewSpigotBlock::new);
@@ -49,11 +50,6 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         builder.add(FACING);
-    }
-
-    @Override
-    public BlockState getPolymerBlockState(BlockState state) {
-        return Blocks.TRIPWIRE_HOOK.getDefaultState().with(TripwireHookBlock.FACING, state.get(FACING).getOpposite());
     }
 
     @Override
@@ -176,5 +172,10 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
             }
         }
         return holder;
+    }
+
+    @Override
+    public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
+        return Blocks.TRIPWIRE_HOOK.getDefaultState().with(TripwireHookBlock.FACING, state.get(FACING).getOpposite());
     }
 }

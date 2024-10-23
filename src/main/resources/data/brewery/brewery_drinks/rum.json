@@ -46,7 +46,7 @@
   ],
   "base_quality_value": "smooth_value_days(16.0, 5.0, 100.0, age) * 10",
   "alcoholic_value": "30 * (0.75 + quality / 40)",
-  "entries": [
+  "effects": [
     {
       "type": "potion",
       "locked": false,

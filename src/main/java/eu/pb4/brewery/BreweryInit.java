@@ -30,6 +30,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.World;
@@ -55,14 +56,14 @@ public class BreweryInit implements ModInitializer {
     public static final boolean DISPLAY_DEV = IS_DEV && true;
     public static final boolean USE_GENERATOR = IS_DEV && true;
 
-    private static World overworld = null;
+    private static ServerWorld overworld = null;
 
     public static Identifier id(String path) {
         return Identifier.of(MOD_ID, path);
     }
 
     @Nullable
-    public static World getOverworld() {
+    public static ServerWorld getOverworld() {
         return overworld;
     }
 

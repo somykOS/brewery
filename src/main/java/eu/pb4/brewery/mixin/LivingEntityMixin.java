@@ -50,8 +50,5 @@ public abstract class LivingEntityMixin extends Entity implements LivingEntityEx
         this.brewery$alcoholManager.tick();
     }
 
-    @Inject(method = "eatFood", at = @At("TAIL"))
-    private void brewery$eat(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-        this.brewery$alcoholManager.eat(stack, foodComponent);
-    }
+
 }

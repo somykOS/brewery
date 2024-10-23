@@ -10,23 +10,18 @@ import net.minecraft.datafixer.schema.Schema3818_3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SequencedMap;
+import java.util.function.Supplier;
 
 @Mixin(Schema3818_3.class)
 public class Schema3818_3Mixin {
-    @ModifyArg(method = "method_57277", at = @At(value = "INVOKE", target = "Lcom/mojang/datafixers/DSL;optionalFields([Lcom/mojang/datafixers/util/Pair;)Lcom/mojang/datafixers/types/templates/TypeTemplate;"))
-    private static Pair<String, TypeTemplate>[] addCustomComponents(Pair<String, TypeTemplate>[] components,
-                                                                    @Local(argsOnly = true) Schema schema) {
-        var list = new ArrayList<>(List.of(components));
-
-        list.add(Pair.of("brewery:cooking_data", DSL.optionalFields(
+    @Inject(method = "method_63573", at = @At("TAIL"))
+    private static void addCustomComponents(Schema schema, CallbackInfoReturnable<SequencedMap<String, Supplier<TypeTemplate>>> cir) {
+        cir.getReturnValue().put("brewery:cooking_data", () -> DSL.optionalFields(
                 "ingredients", DSL.list(TypeReferences.ITEM_STACK.in(schema)),
                 "heat_source", TypeReferences.BLOCK_NAME.in(schema)
-                )));
-
-        return list.toArray(components);
+        ));
     }
 }

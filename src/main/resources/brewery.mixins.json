@@ -6,8 +6,9 @@
   "mixins": [
     "BrewingStandBlockEntityMixin",
     "BrewingStandScreenHandlerPotionSlotMixin",
+    "ConsumableComponentMixin",
     "LivingEntityMixin",
-    "MilkBucketItemMixin",
+    "ClearAllEffectsConsumeEffectItemMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "StatusEffectInstanceMixin",

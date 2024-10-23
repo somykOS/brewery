@@ -8,6 +8,8 @@ import net.minecraft.block.pattern.BlockPatternBuilder;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
@@ -30,21 +33,18 @@ public class BrewBlocks {
 
     public static void registerBarrel(Identifier identifier, Text name, Block planks, Block stairsBlock, Block fenceBlock) {
         var material = new BarrelMaterial(identifier, name, planks, stairsBlock, fenceBlock);
-
+        var blockId = (identifier.getNamespace().equals(Identifier.DEFAULT_NAMESPACE) ? "" : identifier.getNamespace() + "/") + identifier.getPath() + "_barrel_part";
         BARREL_MATERIALS.add(material);
         BARREL_MATERIAL_MAP.put(identifier, material);
-        BARREL_PARTS.put(identifier, register(id( (identifier.getNamespace().equals(Identifier.DEFAULT_NAMESPACE) ? "" : identifier.getNamespace() + "/") + identifier.getPath() + "_barrel_part"),
-                new BrewBarrelPartBlock(
-                        AbstractBlock.Settings.copy(planks)
-                                .allowsSpawning(BLOCK_SPAWNS).dropsNothing(),
-                        material)
-        ));
+        BARREL_PARTS.put(identifier, register(blockId,
+                AbstractBlock.Settings.copy(planks),
+            (s) -> new BrewBarrelPartBlock(s.allowsSpawning(BLOCK_SPAWNS).dropsNothing(), material)));
 
         BARREL_PATTERNS.add(new Pair<>(material, BlockPatternBuilder.start()
-                .aisle(new String[]{"/#/", "###", "/#/", "I I"})
-                .aisle(new String[]{"/#/", "# #", "/#/", "   "})
-                .aisle(new String[]{"/#/", "# #", "/#/", "   "})
-                .aisle(new String[]{"/#/", "###", "/#/", "I I"})
+                .aisle("/#/", "###", "/#/", "I I")
+                .aisle("/#/", "# #", "/#/", "   ")
+                .aisle("/#/", "# #", "/#/", "   ")
+                .aisle("/#/", "###", "/#/", "I I")
                 .where('#', (c) -> c.getBlockState().getBlock() == material.planks())
                 .where('/', (c) -> c.getBlockState().getBlock() == material.stair())
                 .where('I', (c) -> c.getBlockState().getBlock() == material.fence())
@@ -55,8 +55,8 @@ public class BrewBlocks {
         registerBarrel(Identifier.of(identifier), Text.translatable("container.brewery." + identifier + "_barrel"), planks, stairsBlock, fenceBlock);
     }
 
-    public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.create()));
-    public static final Block CAULDRON = register("cauldron", new BrewCauldronBlock(AbstractBlock.Settings.copy(Blocks.CAULDRON).dropsLike(Blocks.CAULDRON)));
+    public static final Block BARREL_SPIGOT = register("barrel_spigot", BrewSpigotBlock::new);
+    public static final Block CAULDRON = register("cauldron", AbstractBlock.Settings.copy(Blocks.CAULDRON).lootTable(Blocks.CAULDRON.getLootTableKey()), BrewCauldronBlock::new);
 
     public static void register() {
         registerBarrel("oak", Blocks.OAK_PLANKS, Blocks.OAK_STAIRS, Blocks.OAK_FENCE);
@@ -70,13 +70,13 @@ public class BrewBlocks {
         registerBarrel("crimson", Blocks.CRIMSON_PLANKS, Blocks.CRIMSON_STAIRS, Blocks.CRIMSON_FENCE);
         registerBarrel("cherry", Blocks.CHERRY_PLANKS, Blocks.CHERRY_STAIRS, Blocks.CHERRY_FENCE);
         registerBarrel("bamboo", Blocks.BAMBOO_PLANKS, Blocks.BAMBOO_STAIRS, Blocks.BAMBOO_FENCE);
+        registerBarrel("pale_oak", Blocks.PALE_OAK_PLANKS, Blocks.PALE_OAK_STAIRS, Blocks.PALE_OAK_FENCE);
     }
 
-    private static <T extends Block> T register(String path, T block) {
-        return Registry.register(Registries.BLOCK, id(path), block);
+    private static <T extends Block> T register(String path, Function<AbstractBlock.Settings, T> block) {
+        return register(path, AbstractBlock.Settings.create(), block);
     }
-
-    private static <T extends Block> T register(Identifier path, T block) {
-        return Registry.register(Registries.BLOCK, path, block);
+    private static <T extends Block> T register(String path, AbstractBlock.Settings settings, Function<AbstractBlock.Settings, T> block) {
+        return Registry.register(Registries.BLOCK, id(path), block.apply(settings.registryKey(RegistryKey.of(RegistryKeys.BLOCK, id(path)))));
     }
 }

@@ -78,7 +78,7 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
             }
 
             if (BrewCauldronBlock.isValid(pos, state, world)) {
-                cauldron.timeCooking += world.getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - cauldron.lastTicked) : 1;
+                cauldron.timeCooking += world1.getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - cauldron.lastTicked) : 1;
 
                 world1.spawnParticles(ParticleTypes.BUBBLE_POP,
                         0.4 * world.random.nextFloat(),
@@ -115,7 +115,7 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
         nbt.putLong("LastTicked", this.lastTicked);
         var list = new NbtList();
         for (var stack : this.inventory) {
-            list.add(stack.encode(lookup));
+            list.add(stack.toNbt(lookup));
         }
 
         nbt.put("Ingredients", list);
@@ -161,7 +161,7 @@ public class BrewCauldronBlockEntity extends BlockEntity implements TickableCont
 
         if (!stack.isEmpty() && stack.isOf(Items.GLASS_BOTTLE)) {
             stack.decrement(1);
-            var agingMultiplier = this.world.getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get();
+            var agingMultiplier = ((ServerWorld) this.world).getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get();
 
             var ingredients = new ArrayList<ItemStack>();
 

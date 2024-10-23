@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "minecraft:glass_bottle"
-    },
-    {
-      "item": "minecraft:book"
-    }
+     "minecraft:glass_bottle",
+      "minecraft:book"
   ],
   "result": {
     "id": "brewery:book_of_brewery"

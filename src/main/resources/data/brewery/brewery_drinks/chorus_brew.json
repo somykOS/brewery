@@ -30,7 +30,7 @@
   ],
   "base_quality_value": "smooth_value_days(2.0, 2.0, 5.0, age) * 10",
   "alcoholic_value": "0",
-  "entries": [
+  "effects": [
     {
       "type": "teleport_random",
       "distance": "quality * 10"

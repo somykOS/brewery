@@ -26,6 +26,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     public static final TagKey<Item> START_CAULDRON_COOKING = TagKey.of(RegistryKeys.ITEM, BreweryInit.id("start_cauldron_cooking"));
@@ -100,7 +101,7 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     }
 
     @Override
-    public BlockState getPolymerBlockState(BlockState state) {
+    public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
         return Blocks.WATER_CAULDRON.getDefaultState().with(LeveledCauldronBlock.LEVEL, state.get(LeveledCauldronBlock.LEVEL));
     }
 

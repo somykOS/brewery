@@ -31,6 +31,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
@@ -85,9 +86,9 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
             return;
         }
 
-        var agingMultiplier = world.getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get();
+        var agingMultiplier = ((ServerWorld) world).getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get();
 
-        this.tickContents(world.getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
+        this.tickContents(((ServerWorld) world).getGameRules().getBoolean(BrewGameRules.AGE_UNLOADED) ? (currentTime - this.lastTicked) * agingMultiplier : this.loadedTime * agingMultiplier);
 
         this.lastTicked = currentTime;
         this.loadedTime = 0;

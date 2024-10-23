@@ -36,7 +36,7 @@
   "distillation_runs": 1,
   "base_quality_value": "10",
   "alcoholic_value": "50",
-  "entries": [
+  "effects": [
     {
       "type": "delayed",
       "delay": "60 * quality",

@@ -14,7 +14,7 @@
   ],
   "base_quality_value": "10",
   "alcoholic_value": "0",
-  "entries": [
+  "effects": [
     {
       "type": "potion",
       "locked": false,

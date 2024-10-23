@@ -24,6 +24,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,19 +35,24 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
         if (user instanceof ServerPlayerEntity player) {
             new IndexGui(player, hand).open();
             new IndexGui(player, hand).open();
-            return TypedActionResult.success(user.getStackInHand(hand), true);
+            return ActionResult.SUCCESS_SERVER;
         }
 
         return super.use(world, user, hand);
     }
 
     @Override
-    public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
+    public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
         return Items.WRITTEN_BOOK;
+    }
+
+    @Override
+    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
+        return null;
     }
 
     public static void build(Collection<Map.Entry<Identifier, DrinkType>> input, double barrelAgingMultiplier, double cookingTimeMultiplier) {

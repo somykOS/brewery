@@ -129,7 +129,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     .evaluate();
 
             if (value >= 0) {
-                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource().withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
+                user.getServer().getCommandManager().executeWithPrefix(user.getCommandSource((ServerWorld) user.getWorld()).withLevel(4).withOutput(CommandOutput.DUMMY), this.command);
             }
         }
 
@@ -350,10 +350,6 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                     double g = user.getX() + (user.getRandom().nextDouble() - 0.5D) * distance;
                     double h = MathHelper.clamp(user.getY() + user.getRandom().nextDouble() - 0.5d, user.getWorld().getBottomY(), user.getWorld().getBottomY() + ((ServerWorld) user.getWorld()).getLogicalHeight() - 1);
                     double j = user.getZ() + (user.getRandom().nextDouble() - 0.5D) * distance;
-                    if (user.hasVehicle()) {
-                        user.stopRiding();
-                    }
-
                     Vec3d vec3d = user.getPos();
                     if (user.teleport(g, h, j, true)) {
                         user.getWorld().emitGameEvent(GameEvent.TELEPORT, vec3d, GameEvent.Emitter.of(user));
@@ -448,11 +444,11 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
                         ExpressionUtil.COMMON_CE_EXPRESSION.fieldOf("value").forGetter(Damage::value)
                 ).apply(instance, Damage::new));
         public static ConsumptionEffect of(MinecraftServer server, RegistryKey<DamageType> type, String value) {
-            return new Damage(server.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(type).get(), WrappedExpression.createDefaultCE(value));
+            return new Damage(server.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(type), WrappedExpression.createDefaultCE(value));
         }
 
         public static ConsumptionEffect of(MinecraftServer server, Identifier type, String value) {
-            return new Damage(server.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).getEntry(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, type)).get(), WrappedExpression.createDefaultCE(value));
+            return new Damage(server.getRegistryManager().getOrThrow(RegistryKeys.DAMAGE_TYPE).getOrThrow(RegistryKey.of(RegistryKeys.DAMAGE_TYPE, type)), WrappedExpression.createDefaultCE(value));
         }
 
         public void apply(LivingEntity user, double age, double quality) {
@@ -465,7 +461,7 @@ public interface ConsumptionEffect extends TypeMapCodec.CodecContainer<Consumpti
             if (value >= 0) {
                 var source = new DamageSource(type);
 
-                user.damage(source, (float) value);
+                user.damage((ServerWorld) user.getWorld(), source, (float) value);
             }
         }
 

@@ -12,23 +12,27 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+
+import java.util.function.Function;
 
 import static eu.pb4.brewery.BreweryInit.id;
 
 public class BrewItems {
-    public static final Item BOOK_ITEM = register("book_of_brewery", new BookOfBreweryItem(new Item.Settings()));
+    public static final Item BOOK_ITEM = register("book_of_brewery", BookOfBreweryItem::new);
 
 
-    public static final PolymerBlockItem BARREL_SPIGOT = register("barrel_spigot", new PolymerBlockItem(
-            BrewBlocks.BARREL_SPIGOT, new Item.Settings().maxCount(16), Items.TRIPWIRE_HOOK
+    public static final PolymerBlockItem BARREL_SPIGOT = register("barrel_spigot", (s) -> new PolymerBlockItem(
+            BrewBlocks.BARREL_SPIGOT, s.maxCount(16).useBlockPrefixedTranslationKey(), Items.TRIPWIRE_HOOK
     ));
 
-    public static final DrinkItem DRINK_ITEM = register("drink_bottle", new DrinkItem(new Item.Settings()));
-    public static final Item FAILED_DRINK_ITEM = register("failed_drink_bottle", new FailedDrinkItem(new Item.Settings()));
-    public static final Item INGREDIENT_MIXTURE = register("ingredient_mixture", new IngredientMixtureItem(new Item.Settings()));
-    public static final BlockTickerItem DEBUG_BLOCK_TICKER = register("debug/block_ticker", new BlockTickerItem(new Item.Settings()));
+    public static final DrinkItem DRINK_ITEM = register("drink_bottle", DrinkItem::new);
+    public static final Item FAILED_DRINK_ITEM = register("failed_drink_bottle", FailedDrinkItem::new);
+    public static final Item INGREDIENT_MIXTURE = register("ingredient_mixture", IngredientMixtureItem::new);
+    public static final BlockTickerItem DEBUG_BLOCK_TICKER = register("debug/block_ticker", BlockTickerItem::new);
 
     public static final ItemGroup ITEM_GROUP = ItemGroup.create(null, -1)
             .displayName(Text.literal("Brewery"))
@@ -56,7 +60,7 @@ public class BrewItems {
         PolymerItemGroupUtils.registerPolymerItemGroup(id("items"), ITEM_GROUP);
     }
 
-    private static <T extends Item> T register(String path, T block) {
-        return Registry.register(Registries.ITEM, id(path), block);
+    private static <T extends Item> T register(String path, Function<Item.Settings, T> block) {
+        return Registry.register(Registries.ITEM, id(path), block.apply(new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, id(path)))));
     }
 }
