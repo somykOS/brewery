@@ -22,6 +22,7 @@ Used types:
 - BOOLEAN - `true` or `false`
 - ID - Id of some item/etc, for example `"minecraft:apple"`, `"minecraft:resistance"`
 - BARREL TYPE - Name of barrels type or `"*"` for every single one.
+- ITEM COMPONENT DATA - Components, written as map of entries (`{"component_id": value}`). See https://minecraft.wiki/w/Data_component_format#List_of_components
 
 
 Currently supported types of barrels: oak, spruce, birch, dark_oak, acacia, mangrove, jungle, warped, crimson
@@ -40,9 +41,9 @@ Main drink format
   "visual": {
     // Changes base item
     "item": "minecraft:potion",
-    // Additional nbt data that should be attached to item. Optional
+    // Additional components data that should be attached to item. Optional
     "components": {/* ITEM COMPONENT DATA */},
-    // Model identifier used for server resource pack. Optional
+    // Model identifier used for server resource pack. Optional, currently only works on initial loading or pack recreation.
     "model": "minecraft:item/dragon_breath"
   },
   // Value of alcohol added to player, has "quality" and "age" parameters 
@@ -105,7 +106,18 @@ Main drink format
 
 All expressions have access to `age` and `quality` variables
 
-## Attribute
+### Add Alcohol Level
+Adds value to alcohol level of the player
+```json5
+{
+  "type": "add_alcohol_level",
+  // Add alcohol level of player, additionally has "current" variable.
+  "value": {/* EXPRESSION */}
+}
+```
+
+
+### Attribute
 Applies (temporary) attributes to player.
 More info about functionality here: https://minecraft.wiki/w/Attribute
 ```json5
@@ -128,6 +140,18 @@ More info about functionality here: https://minecraft.wiki/w/Attribute
 }
 ```
 
+### Consume Effects
+Applies vanilla item consume effects on the player.
+See `on_consume_effects` field in https://minecraft.wiki/w/Data_component_format#consumable
+```json5
+{
+  "type": "consume_effects",
+  // Effects to select from
+  "entries": [{/* VANILLA CONSUME EFFECTS */}],
+  // Used to check if it should apply. If lower than 0, it's not applied, Optional
+  "apply_check": {/* EXPRESSION */}
+}
+```
 
 ### Damage
 Applies damage to player
@@ -217,7 +241,7 @@ Teleports player randomly, like a chorus fruit
 ```
 
 ### Set Alcohol Level
-Executes command as player, ignoring the OP level
+Sets alcohol level of the player
 ```json5
 {
   "type": "set_alcohol_level",

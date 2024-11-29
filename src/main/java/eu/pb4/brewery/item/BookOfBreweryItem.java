@@ -190,7 +190,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                 if (info.bestBarrelType().size() == 1) {
                     list.add(Text.translatable("container.brewery." + info.bestBarrelType().get(0) + "_barrel"));
                 } else {
-                    list.add(Text.translatable("polydex.brewery.one_of_barrels"));
+                    list.add(Text.translatable("polydex.brewery.one_of_barrel"));
                     for (var b : info.bestBarrelType()) {
                         list.add(Text.translatable("container.brewery." + b + "_barrel" ));
                     }

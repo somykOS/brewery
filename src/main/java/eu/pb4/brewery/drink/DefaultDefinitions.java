@@ -362,16 +362,16 @@ public class DefaultDefinitions {
                 new AlcoholValueEffect.Value(60, 20 * 4, List.of(
                         ConsumptionEffect.Potion.of(StatusEffects.SLOWNESS, "4", "min(max((userAlcoholLevel - 70) / 30, 0), 2)", true, false, false)
                 )),
-                new AlcoholValueEffect.Value(70, 20 * 16, List.of(
-                        ConsumptionEffect.Potion.of(StatusEffects.NAUSEA, "16", "0", true, false, false)
+                new AlcoholValueEffect.Value(80, 20 * 16, List.of(
+                        ConsumptionEffect.Potion.of(StatusEffects.NAUSEA, "32", "0", true, false, false)
                 )),
-                new AlcoholValueEffect.Value(70, 20 * 6, List.of(
-                        ConsumptionEffect.Velocity.of("random() - 0.5", "random() / 2 - 0.25", "random() - 0.5", "(0.3 + random() / 10) * ((userAlcoholLevel - 70) / 80 + 1)")
+                new AlcoholValueEffect.Value(70, 4, List.of(
+                        ConsumptionEffect.Velocity.of("random() - 0.5", "random() / 2 - 0.49", "random() - 0.5", "min((0.3 + random() / 10) * ((userAlcoholLevel - 70) / 70) * 0.7, 0.2)")
                 )),
-                new AlcoholValueEffect.Value(90, 20 * 16, List.of(
+                new AlcoholValueEffect.Value(140, 20 * 16, List.of(
                         ConsumptionEffect.Potion.of(StatusEffects.DARKNESS, "16", "0", true, false, false)
                 )),
-                new AlcoholValueEffect.Value(90, 20 * 4, List.of(
+                new AlcoholValueEffect.Value(110, 20 * 4, List.of(
                         ConsumptionEffect.Damage.of(server, BreweryInit.id("alcohol_poisoning"), "(userAlcoholLevel - 110) / 10 + 1")
                 ))
         ), Map.of(Items.BREAD, 3d, Items.MILK_BUCKET, 10d));

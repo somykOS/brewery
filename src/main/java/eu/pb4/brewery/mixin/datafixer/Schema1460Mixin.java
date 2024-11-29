@@ -22,20 +22,20 @@ import java.util.function.Supplier;
 
 @Mixin(Schema1460.class)
 public abstract class Schema1460Mixin extends Schema {
+    @Shadow
+    protected static void registerInventory(Schema schema, Map<String, Supplier<TypeTemplate>> map, String name) {}
+
     public Schema1460Mixin(int versionKey, Schema parent) {
         super(versionKey, parent);
     }
 
-    @Shadow
-    protected static void method_5273(Schema schema, Map<String, Supplier<TypeTemplate>> map, String name) {
-    }
+
 
     @Inject(method = "registerBlockEntities", at = @At("RETURN"))
     private void registerBreweryBlockEntities(Schema schema, CallbackInfoReturnable<Map<String, Supplier<TypeTemplate>>> cir) {
         var map = cir.getReturnValue();
-
-        method_5273(schema, map, mod("cauldron"));
-        method_5273(schema, map, mod("barrel_spigot"));
+        registerInventory(schema, map, mod("cauldron"));
+        registerInventory(schema, map, mod("barrel_spigot"));
 
         schema.registerSimple(map, mod("barrel_part"));
     }

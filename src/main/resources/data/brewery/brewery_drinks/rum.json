@@ -2,22 +2,22 @@
   "version": 2,
   "unfinished_brew_effects": [
     {
-      "type": "potion",
       "effect": "minecraft:poison",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "effect": "minecraft:darkness",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "effect": "minecraft:blindness",
       "time": "60",
-      "value": "4"
+      "value": "4",
+      "type": "potion"
     }
   ],
   "book_information": {
@@ -48,22 +48,22 @@
   "alcoholic_value": "30 * (0.75 + quality / 40)",
   "effects": [
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:fire_resistance",
       "time": "(quality - 4) * 60",
-      "value": "0"
+      "value": "0",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:poison",
       "time": "(6 - quality) * 10",
-      "value": "0"
+      "value": "0",
+      "type": "potion"
     },
     {
-      "type": "set_on_fire",
-      "time": "(quality - 2) * 10"
+      "time": "(quality - 2) * 10",
+      "type": "set_on_fire"
     }
   ],
   "name": {

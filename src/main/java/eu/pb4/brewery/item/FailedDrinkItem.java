@@ -1,8 +1,13 @@
 package eu.pb4.brewery.item;
 
+import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import it.unimi.dsi.fastutil.booleans.BooleanList;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ConsumableComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.component.type.FoodComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -40,24 +45,27 @@ public class FailedDrinkItem extends Item implements PolymerItem {
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
-        return Items.POTION;
-    }
-
-
-    @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context) {
-        var out =  PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
-        out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),
-                Optional.of(0x051a0a), List.of(), Optional.empty()));
-
-        if (!out.contains(DataComponentTypes.CUSTOM_NAME)) {
-            out.set(DataComponentTypes.CUSTOM_NAME, Text.empty().append(out.get(DataComponentTypes.ITEM_NAME)).setStyle(Style.EMPTY.withItalic(false)));
-        }
-        return out;
+        return Items.TRIAL_KEY;
     }
 
     @Override
     public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
-        return null;
+        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
+    }
+
+
+    @Override
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+        out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),
+                Optional.of(0x051a0a), List.of(), Optional.empty()));
+
+        var type = DrinkUtils.getType(stack);
+
+        out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+                FloatList.of(0, (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
+                BooleanList.of(false, false),
+                List.of(type != null ? DrinkUtils.getTypeId(stack).toString() : "", DrinkUtils.getBarrelType(stack), "failed_drink"),
+                IntList.of(0x051a0a, type != null ? type.color().getRgb() : 0x051a0a))
+        );
     }
 }

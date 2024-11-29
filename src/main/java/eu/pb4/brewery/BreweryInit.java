@@ -82,11 +82,8 @@ public class BreweryInit implements ModInitializer {
         var id = id("early_reload");
 
         ServerLifecycleEvents.SERVER_STARTED.addPhaseOrdering(id, Event.DEFAULT_PHASE);
-        ServerLifecycleEvents.SERVER_STARTED.register(id, BreweryInit::loadDrinks);
-        ServerLifecycleEvents.SERVER_STARTED.register((s) -> {
-            CardboardWarning.checkAndAnnounce();
-            overworld = s.getOverworld();
-        });
+        ServerLifecycleEvents.SERVER_STARTING.register(id, BreweryInit::loadDrinks);
+        ServerLifecycleEvents.SERVER_STARTED.register(id, BreweryInit::onServerStarted);
         ServerLifecycleEvents.SERVER_STOPPED.register((s) -> {
             overworld = null;
         });
@@ -189,13 +186,16 @@ public class BreweryInit implements ModInitializer {
                 }
             }
         }
+    }
+
+    private static void onServerStarted(MinecraftServer server) {
+        CardboardWarning.checkAndAnnounce();
+        overworld = server.getOverworld();
 
         BookOfBreweryItem.build(
                 DRINK_TYPES.entrySet(),
                 server.getOverworld().getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get(),
                 server.getOverworld().getGameRules().get(BrewGameRules.CAULDRON_COOKING_TIME_MULTIPLIER).get()
         );
-
-        BrewItems.ITEM_GROUP.updateEntries(new ItemGroup.DisplayContext(server.getOverworld().getEnabledFeatures(), false, server.getRegistryManager()));
     }
 }

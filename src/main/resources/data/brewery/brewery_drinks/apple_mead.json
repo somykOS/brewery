@@ -32,11 +32,11 @@
   "alcoholic_value": "11 * (0.75 + quality / 40)",
   "effects": [
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:speed",
       "time": "(quality - 3) * 12",
-      "value": "quality / 3"
+      "value": "quality / 3",
+      "type": "potion"
     }
   ],
   "name": {

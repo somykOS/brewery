@@ -5,7 +5,11 @@ import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import it.unimi.dsi.fastutil.booleans.BooleanList;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -58,23 +62,24 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
-        return Items.POTION;
-    }
-
-    @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context) {
-        var out = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
-        out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),
-                Optional.of(3694022), List.of(), Optional.empty()));
-
-        if (!out.contains(DataComponentTypes.CUSTOM_NAME)) {
-            out.set(DataComponentTypes.CUSTOM_NAME, Text.empty().append(out.get(DataComponentTypes.ITEM_NAME)).setStyle(Style.EMPTY.withItalic(false)));
-        }
-        return out;
+        return Items.TRIAL_KEY;
     }
 
     @Override
     public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context) {
-        return null;
+        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
+    }
+
+    @Override
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+        out.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(Optional.empty(),
+                Optional.of(3694022), List.of(), Optional.empty()));
+
+        out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+                FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
+                BooleanList.of(false, DrinkUtils.getDistillationStatus(stack)),
+                List.of("", DrinkUtils.getBarrelType(stack), "mixture"),
+                IntList.of(3694022, 3694022)
+        ));
     }
 }

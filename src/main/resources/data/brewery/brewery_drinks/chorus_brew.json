@@ -32,8 +32,8 @@
   "alcoholic_value": "0",
   "effects": [
     {
-      "type": "teleport_random",
-      "distance": "quality * 10"
+      "distance": "quality * 10",
+      "type": "teleport_random"
     }
   ],
   "name": {

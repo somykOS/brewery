@@ -32,6 +32,17 @@ public class DrinkUtils {
         return null;
     }
 
+    @Nullable
+    public static Identifier getTypeId(ItemStack stack) {
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            if (Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().isPresent()) {
+                return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).type().get();
+            }
+        }
+
+        return null;
+    }
+
     public static double getQuality(ItemStack stack) {
         if (stack.contains(BrewComponents.BREW_DATA)) {
             return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).quality();
@@ -57,6 +68,14 @@ public class DrinkUtils {
         }
 
         return false;
+    }
+
+    public static int getDistillationCount(ItemStack stack) {
+        if (stack.contains(BrewComponents.BREW_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.BREW_DATA)).distillations();
+        }
+
+        return 0;
     }
 
     @Nullable
@@ -86,8 +105,24 @@ public class DrinkUtils {
         return defaultValue;
     }
 
+    public static double getCookingAgeInTicks(ItemStack stack) {
+        return getCookingInTicks(stack, Double.MIN_VALUE);
+    }
+
+    public static double getCookingInTicks(ItemStack stack, double defaultValue) {
+        if (stack.contains(BrewComponents.COOKING_DATA)) {
+            return Objects.requireNonNull(stack.get(BrewComponents.COOKING_DATA)).time();
+        }
+
+        return defaultValue;
+    }
+
     public static double getAgeInSeconds(ItemStack stack) {
         return getAgeInTicks(stack) / 20d;
+    }
+
+    public static double getCookingAgeInSeconds(ItemStack stack) {
+        return getCookingAgeInTicks(stack) / 20d;
     }
 
     public static ItemStack createDrink(Identifier type, int age, double quality, int distillated, Block heatingSource) {

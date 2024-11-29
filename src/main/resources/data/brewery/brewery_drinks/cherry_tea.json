@@ -16,18 +16,18 @@
   "alcoholic_value": "0",
   "effects": [
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:resistance",
       "time": "quality * 20",
-      "value": "0"
+      "value": "0",
+      "type": "potion"
     },
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:regeneration",
       "time": "quality * 1.5",
-      "value": "0"
+      "value": "0",
+      "type": "potion"
     }
   ],
   "name": {

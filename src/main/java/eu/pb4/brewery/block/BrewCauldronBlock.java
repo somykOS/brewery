@@ -72,14 +72,14 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
                 if (be instanceof BrewCauldronBlockEntity cauldron) {
                     cauldron.addIngredients(ingredients);
                 }
-                return ActionResult.SUCCESS;
+                return ActionResult.SUCCESS_SERVER;
             }
         }
         return ActionResult.PASS;
     }
 
     @Override
-    public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
+    protected ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state, boolean includeData) {
         return Items.CAULDRON.getDefaultStack();
     }
 
@@ -93,7 +93,7 @@ public class BrewCauldronBlock extends BlockWithEntity implements PolymerBlock {
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         var be = world.getBlockEntity(pos);
         if (be instanceof BrewCauldronBlockEntity blockEntity) {
-            return blockEntity.onUse(player) ? ActionResult.SUCCESS : ActionResult.FAIL;
+            return blockEntity.onUse(player) ? ActionResult.SUCCESS_SERVER : ActionResult.FAIL;
         }
 
 

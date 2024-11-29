@@ -6,11 +6,11 @@
       "rate": 4.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:weakness",
           "time": "4",
-          "value": "min(max((userAlcoholLevel - 60) / 30, 0), 2)"
+          "value": "min(max((userAlcoholLevel - 60) / 30, 0), 2)",
+          "type": "potion"
         }
       ]
     },
@@ -19,61 +19,61 @@
       "rate": 4.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:slowness",
           "time": "4",
-          "value": "min(max((userAlcoholLevel - 70) / 30, 0), 2)"
+          "value": "min(max((userAlcoholLevel - 70) / 30, 0), 2)",
+          "type": "potion"
         }
       ]
     },
     {
-      "minimumValue": 70.0,
+      "minimumValue": 80.0,
       "rate": 16.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:nausea",
-          "time": "16",
-          "value": "0"
+          "time": "32",
+          "value": "0",
+          "type": "potion"
         }
       ]
     },
     {
       "minimumValue": 70.0,
-      "rate": 6.0,
+      "rate": 0.2,
       "effects": [
         {
-          "type": "velocity",
           "x": "random() - 0.5",
-          "y": "random() / 2 - 0.25",
+          "y": "random() / 2 - 0.49",
           "z": "random() - 0.5",
-          "normalized": "(0.3 + random() / 10) * ((userAlcoholLevel - 70) / 80 + 1)"
+          "normalized": "min((0.3 + random() / 10) * ((userAlcoholLevel - 70) / 70) * 0.7, 0.2)",
+          "type": "velocity"
         }
       ]
     },
     {
-      "minimumValue": 90.0,
+      "minimumValue": 140.0,
       "rate": 16.0,
       "effects": [
         {
-          "type": "potion",
           "show_icon": false,
           "effect": "minecraft:darkness",
           "time": "16",
-          "value": "0"
+          "value": "0",
+          "type": "potion"
         }
       ]
     },
     {
-      "minimumValue": 90.0,
+      "minimumValue": 110.0,
       "rate": 4.0,
       "effects": [
         {
-          "type": "damage",
           "id": "brewery:alcohol_poisoning",
-          "value": "(userAlcoholLevel - 110) / 10 + 1"
+          "value": "(userAlcoholLevel - 110) / 10 + 1",
+          "type": "damage"
         }
       ]
     }

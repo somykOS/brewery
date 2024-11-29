@@ -27,11 +27,11 @@
   "alcoholic_value": "8 * (0.75 + quality / 40)",
   "effects": [
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:regeneration",
       "time": "(quality - 5) * 15",
-      "value": "0"
+      "value": "0",
+      "type": "potion"
     }
   ],
   "name": {

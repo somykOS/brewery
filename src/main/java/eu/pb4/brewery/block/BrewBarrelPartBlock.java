@@ -64,15 +64,15 @@ public final class BrewBarrelPartBlock extends Block implements PolymerBlock, Bl
                     barrelBlock.getPos().getX() + 0.5,
                     barrelBlock.getPos().getY() + 0.5,
                     barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
         }
         return ActionResult.PASS;
     }
 
     @Override
-    public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
+    protected ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state, boolean includeData) {
         var target = state.get(SHAPE).state.apply(this.barrelMaterial);
-        return target.getBlock().getPickStack(world, pos, target);
+        return target.getPickStack(world, pos, includeData);
     }
 
     @Override

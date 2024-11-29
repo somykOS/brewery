@@ -8,9 +8,13 @@ import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import it.unimi.dsi.fastutil.booleans.BooleanList;
+import it.unimi.dsi.fastutil.floats.FloatList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ConsumableComponent;
+import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -171,22 +175,16 @@ public class DrinkItem extends Item implements PolymerItem {
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, PacketContext context) {
-        var type = DrinkUtils.getType(itemStack);
-        if (type != null) {
-            return type.visuals().item();
-        }
-
-        return Items.POTION;
+        return Items.TRIAL_KEY;
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType tooltipType, PacketContext context) {
-        var out = PolymerItem.super.getPolymerItemStack(itemStack, tooltipType, context);
-        var type = DrinkUtils.getType(itemStack);
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+        var type = DrinkUtils.getType(stack);
 
         if (type != null) {
             int color;
-            if (type.isFinished(itemStack)) {
+            if (type.isFinished(stack)) {
                 color = type.color().getRgb();
             } else {
                 color = ColorHelper.lerp(0.5f, type.color().getRgb(), 0x385dc6);
@@ -196,13 +194,21 @@ public class DrinkItem extends Item implements PolymerItem {
             if (type.visuals().components().isPresent()) {
                 out.applyComponentsFrom(type.visuals().components().get());
             }
-        }
 
-        if (!out.contains(DataComponentTypes.CUSTOM_NAME)) {
-            out.set(DataComponentTypes.CUSTOM_NAME, Text.empty().append(out.get(DataComponentTypes.ITEM_NAME)).setStyle(Style.EMPTY.withItalic(false)));
+            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+                    FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
+                    BooleanList.of(type.isFinished(stack), DrinkUtils.getDistillationStatus(stack)),
+                    List.of(DrinkUtils.getTypeId(stack).toString(), DrinkUtils.getBarrelType(stack), type.isFinished(stack) ? "finished_drink" : "unfinished_drink"),
+                    IntList.of(color, type.color().getRgb()))
+            );
+        } else {
+            out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(
+                    FloatList.of((float) DrinkUtils.getQuality(stack), (float) DrinkUtils.getAgeInSeconds(stack), (float) DrinkUtils.getCookingAgeInSeconds(stack), DrinkUtils.getDistillationCount(stack)),
+                    BooleanList.of(false, DrinkUtils.getDistillationStatus(stack)),
+                    List.of("", DrinkUtils.getBarrelType(stack), "unknown_drink"),
+                    IntList.of(0x385dc6, 0x385dc6))
+            );
         }
-
-        return out;
     }
 
     @Override
@@ -213,6 +219,6 @@ public class DrinkItem extends Item implements PolymerItem {
             return type.visuals().model().get();
         }
 
-        return null;
+        return Items.POTION.getComponents().get(DataComponentTypes.ITEM_MODEL);
     }
 }

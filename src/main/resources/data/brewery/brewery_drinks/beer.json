@@ -37,11 +37,11 @@
   "alcoholic_value": "6 * (0.75 + quality / 40)",
   "effects": [
     {
-      "type": "potion",
       "locked": false,
       "effect": "minecraft:saturation",
       "time": "(quality - 5) * 6",
-      "value": "quality / 5 - 1.2"
+      "value": "quality / 5 - 1.2",
+      "type": "potion"
     }
   ],
   "name": {

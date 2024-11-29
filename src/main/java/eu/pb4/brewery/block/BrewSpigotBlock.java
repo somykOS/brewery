@@ -112,7 +112,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
                     barrelBlock.getPos().getX() + 0.5,
                     barrelBlock.getPos().getY() + 0.5,
                     barrelBlock.getPos().getZ() + 0.5, SoundEvents.BLOCK_BARREL_OPEN, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.1F + 0.9F);
-            return ActionResult.SUCCESS;
+            return ActionResult.SUCCESS_SERVER;
         }
 
         return ActionResult.PASS;
@@ -164,7 +164,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
                 a.setDisplayHeight(5f);
                 a.setDisplayWidth(5f);
                 a.setViewRange(0.5f);
-                a.setTransformation(m.identity().rotateY(MathHelper.HALF_PI-initialBlockState.get(FACING).getHorizontal() * MathHelper.HALF_PI)
+                a.setTransformation(m.identity().rotateY(MathHelper.HALF_PI-initialBlockState.get(FACING).getHorizontalQuarterTurns() * MathHelper.HALF_PI)
                         .translate(-1.3f - i * 1.2f, 0, 0).scale(2)
                         .rotateX(o * MathHelper.HALF_PI)
                         .scale(0.15f, 3.001f, 2.001f));
