@@ -1,5 +1,6 @@
 package eu.pb4.brewery.block.entity;
 
+import eu.pb4.brewery.block.BrewBarrelPartBlock;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;

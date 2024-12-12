@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.*;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 

@@ -35,6 +35,7 @@ import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.Function;
 
 public final class BrewBarrelPartBlock extends Block implements PolymerBlock, BlockEntityProvider, InventoryProvider {

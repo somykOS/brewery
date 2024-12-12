@@ -11,7 +11,6 @@ import net.minecraft.component.ComponentMap;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryCodecs;
 import net.minecraft.registry.RegistryKeys;
@@ -29,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static eu.pb4.brewery.BreweryInit.id;
+
 
 public record DrinkType(WrappedText name, TextColor color, ItemLookData visuals, List<BarrelInfo> barrelInfo, WrappedExpression baseQuality,
                         WrappedExpression alcoholicValue, List<ConsumptionEffect> consumptionEffects,

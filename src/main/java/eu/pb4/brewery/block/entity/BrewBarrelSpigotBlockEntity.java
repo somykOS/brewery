@@ -12,7 +12,6 @@ import eu.pb4.brewery.item.IngredientMixtureItem;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
 import eu.pb4.brewery.other.BrewGameRules;
-import eu.pb4.brewery.other.BrewUtils;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import it.unimi.dsi.fastutil.longs.LongArraySet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
@@ -59,11 +58,9 @@ public final class BrewBarrelSpigotBlockEntity extends LootableContainerBlockEnt
     }
 
     public static <T extends BlockEntity> void ticker(World world, BlockPos pos, BlockState state, T t) {
-        if (!(t instanceof BrewBarrelSpigotBlockEntity)) {
+        if (!(t instanceof BrewBarrelSpigotBlockEntity barrel)) {
             return;
         }
-
-        var barrel = (BrewBarrelSpigotBlockEntity) t;
 
         barrel.loadedTime++;
 

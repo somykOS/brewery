@@ -6,6 +6,7 @@ import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.item.debug.BlockTickerItem;
 import eu.pb4.polymer.core.api.item.PolymerBlockItem;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
+import java.util.Map.Entry;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;

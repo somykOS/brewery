@@ -4,6 +4,7 @@ import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.TickableContents;
 import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.polymer.core.api.item.PolymerItem;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -12,7 +13,7 @@ import net.minecraft.util.collection.DefaultedList;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockTickerItem extends Item implements PolymerItem {
-    public BlockTickerItem(Settings settings) {
+    public BlockTickerItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 

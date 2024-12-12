@@ -30,20 +30,20 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         super(server, connection, clientData);
     }
 
-    @Inject(method = "handleCommandExecution", at = @At(value = "HEAD"), cancellable = true)
-    private void brewery$onCommand(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages, CallbackInfo ci) {
-        if (packet.command().startsWith("brewery$gui") && (player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) || player.getOffHandStack().isOf(BrewItems.BOOK_ITEM))) {
-            var id = Identifier.tryParse(packet.command().substring("brewery$gui ".length()));
-
-            if (id != null) {
-                this.server.execute(() -> {
-                    this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-                    new BookOfBreweryItem.BrewGui(player, id, true,
-                            () -> new BookOfBreweryItem.IndexGui(player, player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) ? Hand.MAIN_HAND : Hand.OFF_HAND).open()
-                    ).open();
-                });
-            }
-            ci.cancel();
-        }
-    }
+//    @Inject(method = "handleCommandExecution", at = @At(value = "HEAD"), cancellable = true)
+//    private void brewery$onCommand(ChatCommandSignedC2SPacket packet, LastSeenMessageList lastSeenMessages, CallbackInfo ci) {
+//        if (packet.command().startsWith("brewery gui") && (player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) || player.getOffHandStack().isOf(BrewItems.BOOK_ITEM))) {
+//            var id = Identifier.tryParse(packet.command().substring("brewery gui ".length()));
+//
+//            if (id != null) {
+//                this.server.execute(() -> {
+//                    this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+//                    new BookOfBreweryItem.BrewGui(player, id, true,
+//                            () -> new BookOfBreweryItem.IndexGui(player, player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) ? Hand.MAIN_HAND : Hand.OFF_HAND).open()
+//                    ).open();
+//                });
+//            }
+//            ci.cancel();
+//        }
+//    }
 }

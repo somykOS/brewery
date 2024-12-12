@@ -6,6 +6,7 @@ import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CardboardWarning implements PreLaunchEntrypoint {
     public static final String MOD_NAME = "Brewery";

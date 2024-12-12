@@ -5,6 +5,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;

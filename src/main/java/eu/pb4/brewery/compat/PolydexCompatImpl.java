@@ -1,8 +1,10 @@
 package eu.pb4.brewery.compat;
 
 import eu.pb4.brewery.BreweryInit;
+import eu.pb4.brewery.block.BarrelMaterial;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.drink.DrinkType;
+import eu.pb4.brewery.drink.DrinkType.BarrelInfo;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.item.BrewItems;
 

@@ -11,19 +11,19 @@ buildscript {
 }
 
 plugins {
-	id 'fabric-loom' version '1.6.+'
+	id 'fabric-loom' version '1.9.+'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 	id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
 
-archivesBaseName = project.archives_base_name
 version = project.mod_version + "+" + project.minecraft_version
 group = project.maven_group
 
+base {
+	archivesName = project.archives_base_name
+}
 
 apply plugin: 'de.guntram.mcmod.crowdin-translate'
 crowdintranslate.crowdinProjectName = 'patbox-mods'
@@ -70,9 +70,9 @@ dependencies {
 	modImplementation include('eu.pb4:polymer-core:0.9.0+1.21-rc1')
 	modImplementation include('eu.pb4:polymer-resource-pack:0.9.0+1.21-rc1')
 	modImplementation include('eu.pb4:polymer-virtual-entity:0.9.0+1.21-rc1')
-	modImplementation include("eu.pb4:sgui:1.6.0+1.21")
+	modImplementation include("eu.pb4:sgui:1.6.1+1.21.1")
 	modImplementation include("eu.pb4:placeholder-api:2.4.0-pre.2+1.21")
-	modImplementation include("me.lucko:fabric-permissions-api:0.1-SNAPSHOT")
+	modImplementation include("me.lucko:fabric-permissions-api:0.3.1")
 	//modImplementation include('xyz.nucleoid:more-codecs:0.2.2+1.18')
 
 	implementation include("net.objecthunter:exp4j:0.4.8")
@@ -95,8 +95,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	// Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-	it.options.release = 17
+	it.options.release = 21
 }
 
 java {
@@ -104,6 +103,9 @@ java {
 	// if it is present.
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {

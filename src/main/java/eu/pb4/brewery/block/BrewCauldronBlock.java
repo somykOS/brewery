@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.entity.BrewCauldronBlockEntity;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
+import java.util.List;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;

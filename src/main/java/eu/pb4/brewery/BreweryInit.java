@@ -24,14 +24,11 @@ import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -99,9 +96,9 @@ public class BreweryInit implements ModInitializer {
 
         UseBlockCallback.EVENT.register(BrewCauldronBlock::handleUseEvent);
 
-        if (FabricLoader.getInstance().isModLoaded("polydex")) {
-            PolydexCompatImpl.init();
-        }
+//        if (FabricLoader.getInstance().isModLoaded("polydex")) {
+//            PolydexCompatImpl.init();
+//        }
     }
 
     public static void clearData() {

@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class DrinkItem extends Item implements PolymerItem {
-    public DrinkItem(Settings settings) {
+    public DrinkItem(net.minecraft.item.Item.Settings settings) {
         super(settings.maxCount(1).food(new FoodComponent.Builder().alwaysEdible().build()));
     }
 

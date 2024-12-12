@@ -2,12 +2,16 @@ package eu.pb4.brewery.item;
 
 import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.GenericModInfo;
+import eu.pb4.brewery.drink.DrinkInfo;
 import eu.pb4.brewery.drink.DrinkType;
+import eu.pb4.brewery.drink.DrinkType.BrewIngredient;
 import eu.pb4.brewery.other.BrewUtils;
+import eu.pb4.brewery.other.WrappedText;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -19,6 +23,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
@@ -26,10 +31,11 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class BookOfBreweryItem extends Item implements PolymerItem {
-    public BookOfBreweryItem(Settings settings) {
+    public BookOfBreweryItem(net.minecraft.item.Item.Settings settings) {
         super(settings);
     }
 
@@ -118,7 +124,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
         for (var e : types) {
             var type = e.getValue();
-            indexEntries.add(type.name().text().copy().styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/brewery$gui " + e.getKey())).withUnderline(true)));
+            indexEntries.add(type.name().text().copy().styled(x -> x.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/brewery gui " + e.getKey())).withUnderline(true)));
 
             try {
                 buildInfo(e.getKey(), e.getValue(), barrelAgingMultiplier, cookingTimeMultiplier);
@@ -253,26 +259,27 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             super.onClose();
         }
 
-        @Override
-        public boolean onCommand(String command) {
-            try {
-                if (command.startsWith("/brewery$gui ")) {
-                    var id = Identifier.tryParse(command.substring("/brewery$gui ".length()));
-
-                    if (id != null) {
-                        this.player.server.execute(() -> {
-                            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-                            new BrewGui(player, id, true, this::open).open();
-                        });
-                    }
-                }
-                return true;
-            } catch (Throwable e) {
-
-            }
-
-            return super.onCommand(command);
-        }
+//        @Override
+//        public boolean onCommand(String command) {
+//            try {
+//                if (command.startsWith("/brewery gui ")) {
+//                    var id = Identifier.tryParse(command.substring("/brewery gui ".length()));
+//
+//                    if (id != null) {
+//                        System.out.println(command);
+//                        this.player.server.execute(() -> {
+//                            this.player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+//                            new BrewGui(player, id, true, this::open).open();
+//                        });
+//                    }
+//                }
+//                return true;
+//            } catch (Throwable e) {
+//
+//            }
+//
+//            return super.onCommand(command);
+//        }
 
         @Override
         public void onTakeBookButton() {
