@@ -39,7 +39,6 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more formation about repositories.
 	maven { url "https://maven.nucleoid.xyz" }
-	maven { url "https://maven.nucleoid.xyz" }
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	maven {
 		name = "Modrinth"

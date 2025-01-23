@@ -1,29 +1,23 @@
 package eu.pb4.brewery.item;
 
 import eu.pb4.brewery.BreweryInit;
-import eu.pb4.brewery.GenericModInfo;
-import eu.pb4.brewery.drink.DrinkInfo;
 import eu.pb4.brewery.drink.DrinkType;
-import eu.pb4.brewery.drink.DrinkType.BrewIngredient;
 import eu.pb4.brewery.other.BrewUtils;
-import eu.pb4.brewery.other.WrappedText;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.sgui.api.elements.BookElementBuilder;
 import eu.pb4.sgui.api.gui.BookGui;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.Person;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.*;
@@ -31,8 +25,6 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 public class BookOfBreweryItem extends Item implements PolymerItem {
     public BookOfBreweryItem(net.minecraft.item.Item.Settings settings) {
@@ -64,8 +56,8 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
         {
             var contributors = new ArrayList<String>();
-            contributors.addAll(container.getMetadata().getAuthors().stream().map((p) -> p.getName()).collect(Collectors.toList()));
-            contributors.addAll(container.getMetadata().getContributors().stream().map((p) -> p.getName()).collect(Collectors.toList()));
+            contributors.addAll(container.getMetadata().getAuthors().stream().map(Person::getName).toList());
+            contributors.addAll(container.getMetadata().getContributors().stream().map(Person::getName).toList());
 
             builder.addPage(
                     Text.empty(),
@@ -160,7 +152,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             list.add(Text.empty());
             for (var i : type.ingredients()) {
                 if (i.items().size() == 1) {
-                    list.add(Text.literal(i.count() + " × ").append(i.items().get(0).getName()));
+                    list.add(Text.literal(i.count() + " × ").append(i.items().getFirst().getName()));
                 } else {
                     var text = Text.translatable("polydex.brewery.any_of").append("\n");
 
@@ -188,7 +180,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                 list.add(Text.translatable("polydex.brewery.any_barrel"));
             } else {
                 if (info.bestBarrelType().size() == 1) {
-                    list.add(Text.translatable("container.brewery." + info.bestBarrelType().get(0) + "_barrel"));
+                    list.add(Text.translatable("container.brewery." + info.bestBarrelType().getFirst() + "_barrel"));
                 } else {
                     list.add(Text.translatable("polydex.brewery.one_of_barrels"));
                     for (var b : info.bestBarrelType()) {
@@ -208,10 +200,17 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             list.add(Text.empty());
         }
 
+        for (var text : info.additionalInfo()) {
+            list.add(text.text().copy());
+        }
+
         var x = new ArrayList<Text>();
         for (var t : list) {
+            if (t.getString().isEmpty() && x.isEmpty()) {
+                continue; // Пропускаємо порожні елементи на початку сторінки
+            }
             x.add(t);
-            if (x.size() == 10) {
+            if (x.size() >= 12) {
                 builder.addPage(x.toArray(new Text[0]));
                 x.clear();
             }
@@ -220,10 +219,6 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         if (!x.isEmpty()) {
             builder.addPage(x.toArray(new Text[0]));
             x.clear();
-        }
-
-        for (var text : info.additionalInfo()) {
-            builder.addPage(text.text().copy());
         }
 
         builder.setTitle(id.toString());
@@ -246,7 +241,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             this.stack = player.getStackInHand(hand);
             this.hand = hand;
             this.setPage(Math.min(stack.getOrDefault(BrewComponents.BOOK_PAGE, 0),
-                    book.get(DataComponentTypes.WRITTEN_BOOK_CONTENT).getPages(false).size()));
+                    Objects.requireNonNull(book.get(DataComponentTypes.WRITTEN_BOOK_CONTENT)).getPages(false).size()));
         }
 
         @Override
