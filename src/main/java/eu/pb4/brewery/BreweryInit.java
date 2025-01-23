@@ -49,8 +49,8 @@ public class BreweryInit implements ModInitializer {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();
-    public static final boolean DISPLAY_DEV = IS_DEV && true;
-    public static final boolean USE_GENERATOR = IS_DEV && true;
+    public static final boolean DISPLAY_DEV = IS_DEV && false;
+    public static final boolean USE_GENERATOR = IS_DEV && false;
 
     private static World overworld = null;
 
