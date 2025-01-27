@@ -4,9 +4,7 @@ import eu.pb4.brewery.BreweryInit;
 import eu.pb4.brewery.block.BrewBlocks;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.item.debug.BlockTickerItem;
-import eu.pb4.polymer.core.api.item.PolymerBlockItem;
 import eu.pb4.polymer.core.api.item.PolymerItemGroupUtils;
-import java.util.Map.Entry;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -16,14 +14,15 @@ import net.minecraft.registry.Registry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import static eu.pb4.brewery.BreweryInit.MOD_ID;
 import static eu.pb4.brewery.BreweryInit.id;
 
 public class BrewItems {
     public static final Item BOOK_ITEM = register("book_of_brewery", new BookOfBreweryItem(new Item.Settings()));
 
 
-    public static final PolymerBlockItem BARREL_SPIGOT = register("barrel_spigot", new PolymerBlockItem(
-            BrewBlocks.BARREL_SPIGOT, new Item.Settings().maxCount(16), Items.TRIPWIRE_HOOK
+    public static final TexturedPolymerBlockItem BARREL_SPIGOT = register("barrel_spigot", new TexturedPolymerBlockItem(
+            BrewBlocks.BARREL_SPIGOT, new Item.Settings().maxCount(16), Identifier.of(MOD_ID, "block/spigot")
     ));
 
     public static final DrinkItem DRINK_ITEM = register("drink_bottle", new DrinkItem(new Item.Settings()));

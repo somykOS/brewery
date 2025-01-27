@@ -17,6 +17,7 @@ import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.other.BrewCommands;
 import eu.pb4.brewery.other.BrewGameRules;
 import eu.pb4.brewery.other.BrewNetworking;
+import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.objects.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -83,9 +84,7 @@ public class BreweryInit implements ModInitializer {
             CardboardWarning.checkAndAnnounce();
             overworld = s.getOverworld();
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register((s) -> {
-            overworld = null;
-        });
+        ServerLifecycleEvents.SERVER_STOPPED.register((s) -> overworld = null);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.addPhaseOrdering(id, Event.DEFAULT_PHASE);
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(id, (x, y, z) -> BreweryInit.loadDrinks(x));
 
@@ -99,6 +98,13 @@ public class BreweryInit implements ModInitializer {
 //        if (FabricLoader.getInstance().isModLoaded("polydex")) {
 //            PolydexCompatImpl.init();
 //        }
+
+        if (PolymerResourcePackUtils.addModAssets(MOD_ID)) {
+            LOGGER.info("Successfully added mod assets for " + MOD_ID);
+        } else {
+            LOGGER.error("Failed to add mod assets for " + MOD_ID);
+        }
+        PolymerResourcePackUtils.markAsRequired();
     }
 
     public static void clearData() {

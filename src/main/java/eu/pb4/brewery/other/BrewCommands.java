@@ -18,7 +18,6 @@ import eu.pb4.brewery.drink.DrinkType;
 import eu.pb4.brewery.drink.DrinkUtils;
 import eu.pb4.brewery.item.BookOfBreweryItem;
 import eu.pb4.brewery.item.BrewItems;
-import eu.pb4.sgui.api.gui.BookGui;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Blocks;
@@ -30,14 +29,12 @@ import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.TimeArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Items;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import java.nio.file.Files;
 import java.util.Locale;
@@ -59,9 +56,7 @@ public class BrewCommands {
                                             Iterable<Identifier> candidates = BreweryInit.DRINK_TYPES.keySet()::iterator;
                                             var remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
 
-                                            CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> {
-                                                builder.suggest(id.toString(), BreweryInit.DRINK_TYPES.get(id).name().text());
-                                            });
+                                            CommandSource.forEachMatching(candidates, remaining, Function.identity(), id -> builder.suggest(id.toString(), BreweryInit.DRINK_TYPES.get(id).name().text()));
                                             return builder.buildFuture();
                                         })
                                         .executes(BrewCommands::createDrink)
@@ -119,12 +114,15 @@ public class BrewCommands {
         var player = ctx.getSource().getPlayer();
 
         if (id != null && player != null) {
-            player.server.execute(() -> {
-                player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
-                new BookOfBreweryItem.BrewGui(player, id, true, ()->new BookGui(player, BrewItems.BOOK_ITEM.getDefaultStack()).open()).open();
-                //player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) ? player.getMainHandStack() : player.getOffHandStack()
-            });
-            r = 1;
+            var book = player.getMainHandStack();
+            if(book.isOf(BrewItems.BOOK_ITEM)) {
+                player.server.execute(() -> {
+                    player.playSoundToPlayer(SoundEvents.ITEM_BOOK_PAGE_TURN, SoundCategory.BLOCKS, 1f, 1);
+                    new BookOfBreweryItem.BrewGui(player, id, true, () -> new BookOfBreweryItem.IndexGui(player, player.getActiveHand()).open()).open();
+                    //player.getMainHandStack().isOf(BrewItems.BOOK_ITEM) ? player.getMainHandStack() : player.getOffHandStack()
+                });
+                r = 1;
+            }
         }
 
         return r;

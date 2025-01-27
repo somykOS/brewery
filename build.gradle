@@ -1,14 +1,14 @@
-buildscript {
-	dependencies {
-		classpath "de.guntram.mcmod:crowdin-translate:1.4+1.19.3"
-	}
-	repositories {
-		maven {
-			name = 'CrowdinTranslate source'
-			url = "https://minecraft.guntram.de/maven/"
-		}
-	}
-}
+//buildscript {
+//	dependencies {
+//		classpath "de.guntram.mcmod:crowdin-translate:1.4+1.19.3"
+//	}
+//	repositories {
+//		maven {
+//			name = 'CrowdinTranslate source'
+//			url = "https://minecraft.guntram.de/maven/"
+//		}
+//	}
+//}
 
 plugins {
 	id 'fabric-loom' version '1.9.+'
@@ -25,11 +25,11 @@ base {
 	archivesName = project.archives_base_name
 }
 
-apply plugin: 'de.guntram.mcmod.crowdin-translate'
-crowdintranslate.crowdinProjectName = 'patbox-mods'
-crowdintranslate.jsonSourceName = 'brewery'
-crowdintranslate.minecraftProjectName = '../data/brewery'
-crowdintranslate.verbose = false
+//apply plugin: 'de.guntram.mcmod.crowdin-translate'
+//crowdintranslate.crowdinProjectName = 'patbox-mods'
+//crowdintranslate.jsonSourceName = 'brewery'
+//crowdintranslate.minecraftProjectName = '../data/brewery'
+//crowdintranslate.verbose = false
 
 
 repositories {
@@ -65,12 +65,14 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation include('xyz.nucleoid:server-translations-api:2.3.1+1.21-pre2')
-	modImplementation include('eu.pb4:polymer-core:0.9.0+1.21-rc1')
-	modImplementation include('eu.pb4:polymer-resource-pack:0.9.0+1.21-rc1')
-	modImplementation include('eu.pb4:polymer-virtual-entity:0.9.0+1.21-rc1')
+	//modImplementation include('xyz.nucleoid:server-translations-api:2.3.1+1.21-pre2')
+	modImplementation include("eu.pb4:polymer-core:${project.polymer_version}")
+	modImplementation include("eu.pb4:polymer-resource-pack:${project.polymer_version}")
+	modImplementation include("eu.pb4:polymer-autohost:${project.polymer_version}")
+	modImplementation include("eu.pb4:polymer-virtual-entity:${project.polymer_version}")
 	modImplementation include("eu.pb4:sgui:1.6.1+1.21.1")
 	modImplementation include("eu.pb4:placeholder-api:2.4.0-pre.2+1.21")
+	modImplementation include("eu.pb4:factorytools:0.3.2+1.21")
 	modImplementation include("me.lucko:fabric-permissions-api:0.3.1")
 	//modImplementation include('xyz.nucleoid:more-codecs:0.2.2+1.18')
 

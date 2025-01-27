@@ -3,8 +3,10 @@ package eu.pb4.brewery.block;
 import com.mojang.serialization.MapCodec;
 import eu.pb4.brewery.block.entity.BrewBarrelSpigotBlockEntity;
 import eu.pb4.brewery.block.entity.BrewBlockEntities;
+import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.core.api.block.PolymerBlock;
-import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.virtualentity.api.BlockWithElementHolder;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
@@ -12,7 +14,6 @@ import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -23,20 +24,24 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
+import static eu.pb4.brewery.BreweryInit.MOD_ID;
+
 public final class BrewSpigotBlock extends HorizontalFacingBlock implements PolymerBlock, BlockEntityProvider, BlockWithElementHolder {
     private static final MapCodec<BrewSpigotBlock> CODEC = createCodec(BrewSpigotBlock::new);
+    private final ItemStack model;
 
     public BrewSpigotBlock(Settings settings) {
         super(settings);
+        model = BaseItemProvider.requestModel(Identifier.of(MOD_ID, "block/spigot"));
     }
 
     @Override
@@ -51,7 +56,7 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
 
     @Override
     public BlockState getPolymerBlockState(BlockState state) {
-        return Blocks.TRIPWIRE_HOOK.getDefaultState().with(TripwireHookBlock.FACING, state.get(FACING).getOpposite());
+        return Blocks.STRUCTURE_VOID.getDefaultState();
     }
 
     @Override
@@ -155,24 +160,27 @@ public final class BrewSpigotBlock extends HorizontalFacingBlock implements Poly
     }
 
     @Override
-    public @Nullable ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
-        var holder = new ElementHolder();
-        var m = new Matrix4f();
+    public ElementHolder createElementHolder(ServerWorld world, BlockPos pos, BlockState initialBlockState) {
+        Model finalModel = new Model(model);
+        finalModel.setDirection(initialBlockState.get(FACING).getOpposite());
+        return finalModel;
+    }
 
-        for (var i = 0; i < 3; i++) {
-            for (var o = 0; o < 2; o++) {
-                var a = new ItemDisplayElement(PolymerUtils.createPlayerHead("ewogICJ0aW1lc3RhbXAiIDogMTY3ODU0MTAyNzMwNiwKICAicHJvZmlsZUlkIiA6ICI4MTc1MTc4NzQ2MjE0NmY2YjllOWM3MTYyMWRiODQwZSIsCiAgInByb2ZpbGVOYW1lIiA6ICJSZWFwcGVhcmFuY2UiLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmY3NTVjNDc1YTcwODcxMGQwNGRiZDk0YjNiZDI5MDZlMDFhODMwY2IwNGE2Y2QyYWExY2JhOTk2YmU3OGYyZCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9CiAgfQp9"));
-                a.setModelTransformation(ModelTransformationMode.FIXED);
-                a.setDisplayHeight(5f);
-                a.setDisplayWidth(5f);
-                a.setViewRange(0.5f);
-                a.setTransformation(m.identity().rotateY(MathHelper.HALF_PI-initialBlockState.get(FACING).getHorizontal() * MathHelper.HALF_PI)
-                        .translate(-1.3f - i * 1.2f, 0, 0).scale(2)
-                        .rotateX(o * MathHelper.HALF_PI)
-                        .scale(0.15f, 3.001f, 2.001f));
-                holder.addElement(a);
-            }
+    private static final class Model extends BlockModel {
+
+        private final ItemDisplayElement mainElement;
+
+        private Model(ItemStack model) {
+            mainElement = ItemDisplayElementUtil.createSimple(model);
+//            mainElement.setScale(new Vector3f(3f));
+//            mainElement.setOffset(new Vec3d(0f, -0.16f, -0.13f));
+            this.addElement(mainElement);
         }
-        return holder;
+
+        public void setDirection(Direction direction) {
+            Matrix4f matrix = new Matrix4f();
+            matrix.rotateY((float) Math.toRadians(-direction.asRotation()));
+            mainElement.setTransformation(matrix);
+        }
     }
 }

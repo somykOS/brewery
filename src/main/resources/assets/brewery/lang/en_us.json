@@ -18,6 +18,7 @@
   "item.brewery.drink_bottle": "Undefined Drink Bottle (%s)",
   "item.brewery.failed_drink_bottle": "Failed Drink",
   "item.brewery.book_of_brewery": "Book of Brewery",
+  "item.brewery.unknown_drink": "<Unknown>",
 
   "drinktype.brewery.beer": "Beer",
   "drinktype.brewery.dark_beer": "Dark Beer",

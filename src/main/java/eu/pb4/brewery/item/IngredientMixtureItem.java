@@ -43,12 +43,12 @@ public class IngredientMixtureItem extends Item implements PolymerItem {
             var age = DrinkUtils.getAgeInSeconds(stack) / mult;
 
             if (age > 0) {
-                tooltip.add(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age)).formatted(Formatting.DARK_GRAY));
+                tooltip.add(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age)).formatted(Formatting.GRAY));
             }
 
-            tooltip.add(Text.translatable("text.brewery.cooked_for", BrewUtils.fromTimeShort(time / 20d / mult)).formatted(Formatting.DARK_GRAY));
+            tooltip.add(Text.translatable("text.brewery.cooked_for", BrewUtils.fromTimeShort(time / 20d / mult)).formatted(Formatting.GRAY));
             for (var ingredient : getIngredients(stack)) {
-                tooltip.add(Text.empty().append("" + ingredient.getCount()).append(" × ").append(ingredient.getName()).formatted(Formatting.DARK_GRAY));
+                tooltip.add(Text.empty().append("" + ingredient.getCount()).append(" × ").append(ingredient.getName()).formatted(Formatting.GRAY));
             }
         }
     }

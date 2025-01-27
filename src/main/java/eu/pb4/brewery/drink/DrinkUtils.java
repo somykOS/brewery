@@ -5,16 +5,10 @@ import eu.pb4.brewery.item.BrewComponents;
 import eu.pb4.brewery.item.BrewItems;
 import eu.pb4.brewery.item.comp.BrewData;
 import eu.pb4.brewery.item.comp.CookingData;
-import eu.pb4.brewery.other.BrewGameRules;
-import eu.pb4.brewery.other.BrewUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,71 +94,6 @@ public class DrinkUtils {
         stack.set(BrewComponents.COOKING_DATA, new CookingData(0, List.of(), heatingSource));
 
         return stack;
-    }
-
-    public static ItemStack appendLore(ItemStack polymerItemStack, ItemStack itemStack){
-        var world = BreweryInit.getOverworld();
-        if (world != null) {
-            var type = DrinkUtils.getType(itemStack);
-            //LoreComponent lore = stack.getOrDefault(DataComponentTypes.LORE, new LoreComponent(new ArrayList<>()));
-            LoreComponent lore = polymerItemStack.getComponents().get(DataComponentTypes.LORE);
-            if(lore == null) {
-                // Create new LoreComponent with mutable ArrayList
-                lore = new LoreComponent(new ArrayList<>());
-            } else {
-                // Create new LoreComponent with mutable copy of existing lines
-                lore = new LoreComponent(new ArrayList<>(lore.lines()));
-            }
-
-            if (type != null && type.showQuality() && world.getGameRules().getBoolean(BrewGameRules.SHOW_QUALITY)) {
-                var quality
-                        = DrinkUtils.getQuality(itemStack);
-                var starCount = (Math.round((quality / 2) * 10)) / 10d;
-
-                StringBuilder stars = new StringBuilder();
-                StringBuilder antistars = new StringBuilder();
-
-                while (starCount >= 1) {
-                    stars.append("⭐");
-                    starCount--;
-                }
-
-                if (starCount > 0) {
-                    stars.append("☆");
-                }
-
-                var starsLeft = 5 - stars.length();
-                for (int i = 0; i < starsLeft; i++) {
-                    antistars.append("☆");
-                }
-
-                lore.lines().add(Text.translatable("text.brewery.quality", Text.empty()
-                        .append(Text.literal(stars.toString()).formatted(Formatting.YELLOW))
-                        .append(Text.literal(antistars.toString()).formatted(Formatting.DARK_GRAY))
-                ).formatted(Formatting.DARK_GRAY));
-            }
-
-            if (world.getGameRules().getBoolean(BrewGameRules.SHOW_AGE)) {
-                double mult = world != null ? world.getGameRules().get(BrewGameRules.BARREL_AGING_MULTIPLIER).get() : 1;
-
-                var age = DrinkUtils.getAgeInSeconds(itemStack) / mult;
-                if (age > 0) {
-                    lore.lines().add(Text.translatable("text.brewery.age", BrewUtils.fromTimeShort(age)).formatted(Formatting.DARK_GRAY));
-                }
-            }
-
-            if (BreweryInit.DISPLAY_DEV) {
-                lore.lines().add(Text.literal("== DEV ==").formatted(Formatting.AQUA));
-                lore.lines().add(Text.literal("BrewType: ").append(itemStack.getOrDefault(BrewComponents.BREW_DATA, BrewData.DEFAULT).type().toString()).formatted(Formatting.GRAY));
-                lore.lines().add(Text.literal("BrewQuality: ").append("" + DrinkUtils.getQuality(itemStack)).formatted(Formatting.GRAY));
-                lore.lines().add(Text.literal("BrewAge: ").append("" + DrinkUtils.getAgeInTicks(itemStack)).formatted(Formatting.GRAY));
-                lore.lines().add(Text.literal("BrewDistillated: ").append("" + DrinkUtils.getDistillationStatus(itemStack)).formatted(Formatting.GRAY));
-            }
-
-            //System.out.println(lore.lines());
-            polymerItemStack.set(DataComponentTypes.LORE, lore);
-        }
-        return polymerItemStack;
     }
 
     public static List<DrinkType> findTypes(List<ItemStack> ingredients, Identifier barrelType, Block heatSource) {

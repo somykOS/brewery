@@ -41,10 +41,10 @@ public class BrewBlocks {
         ));
 
         BARREL_PATTERNS.add(new Pair<>(material, BlockPatternBuilder.start()
-                .aisle(new String[]{"/#/", "###", "/#/", "I I"})
-                .aisle(new String[]{"/#/", "# #", "/#/", "   "})
-                .aisle(new String[]{"/#/", "# #", "/#/", "   "})
-                .aisle(new String[]{"/#/", "###", "/#/", "I I"})
+                .aisle("/#/", "###", "/#/", "I I")
+                .aisle("/#/", "# #", "/#/", "   ")
+                .aisle("/#/", "# #", "/#/", "   ")
+                .aisle("/#/", "###", "/#/", "I I")
                 .where('#', (c) -> c.getBlockState().getBlock() == material.planks())
                 .where('/', (c) -> c.getBlockState().getBlock() == material.stair())
                 .where('I', (c) -> c.getBlockState().getBlock() == material.fence())
@@ -55,7 +55,7 @@ public class BrewBlocks {
         registerBarrel(Identifier.of(identifier), Text.translatable("container.brewery." + identifier + "_barrel"), planks, stairsBlock, fenceBlock);
     }
 
-    public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.create()));
+    public static final Block BARREL_SPIGOT = register("barrel_spigot", new BrewSpigotBlock(AbstractBlock.Settings.copy(Blocks.TRIPWIRE_HOOK)));
     public static final Block CAULDRON = register("cauldron", new BrewCauldronBlock(AbstractBlock.Settings.copy(Blocks.CAULDRON).dropsLike(Blocks.CAULDRON)));
 
     public static void register() {
