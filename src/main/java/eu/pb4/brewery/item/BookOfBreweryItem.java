@@ -24,6 +24,7 @@ import net.minecraft.util.*;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.Collator;
 import java.util.*;
 
 public class BookOfBreweryItem extends Item implements PolymerItem {
@@ -50,7 +51,13 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
     public static void build(Collection<Map.Entry<Identifier, DrinkType>> input, double barrelAgingMultiplier, double cookingTimeMultiplier) {
         var builder = new BookElementBuilder();
         BrewGui.BOOKS.clear();
-        var types = input.stream().filter(x -> x.getValue().info().isPresent()).sorted(Comparator.comparing(x -> x.getValue().name().text().getString())).toList();
+        //var types = input.stream().filter(x -> x.getValue().info().isPresent()).sorted(Comparator.comparing(x -> x.getValue().name().text().getString())).toList();
+
+        Collator collator = Collator.getInstance(Locale.forLanguageTag("uk-UA"));
+        var types = input.stream()
+                .filter(x -> x.getValue().info().isPresent())
+                .sorted(Comparator.comparing(x -> x.getValue().name().text().getString(), collator))
+                .toList();
 
         var container = FabricLoader.getInstance().getModContainer(BreweryInit.MOD_ID).get();
 
@@ -61,7 +68,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
 
             builder.addPage(
                     Text.empty(),
-                    Text.empty().append(Text.translatable("item.brewery.book_of_brewery").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_BLUE))
+                    Text.empty().append(Text.translatable("item.brewery.book_of_brewery").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_RED))
                             .append(Text.literal(" \uD83E\uDDEA").formatted(Formatting.DARK_RED)),
                     Text.empty(),
                     Text.translatable("text.brewery.about.version").formatted(Formatting.DARK_GREEN)
@@ -80,7 +87,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         }
 
         builder.addPage(
-                Text.translatable("polydex.brewery.cooking_cauldron").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.GREEN),
+                Text.translatable("polydex.brewery.cooking_cauldron").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_RED),
                 Text.empty(),
                 Text.translatable("polydex.brewery.cooking_cauldron.text")
         );
@@ -92,7 +99,7 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         );
 
         builder.addPage(
-                Text.translatable("polydex.brewery.building_barrel").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.GOLD),
+                Text.translatable("polydex.brewery.building_barrel").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_RED),
                 Text.empty(),
                 Text.literal("§8 1§f⏹§a⏹§f⏹⏹§a⏹   §8|   2§f⏹§b⏹⏹⏹⏹"),
                 Text.literal("§f ⏹⏹⏹⏹⏹⏹   §8|   §f⏹⏹§c⏹⏹⏹⏹"),
@@ -109,6 +116,11 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
                 Text.empty().append(Text.literal("§d⏹")).append(" - ").append(Text.translatable("block.brewery.barrel_spigot"))
         );
 
+        builder.addPage(
+                Text.translatable("polydex.brewery.distillation").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.DARK_RED),
+                Text.empty(),
+                Text.translatable("polydex.brewery.distillation.text")
+        );
 
         var indexEntries = new ArrayList<Text>();
         indexEntries.add(Text.translatable("polydex.brewery.recipes").formatted(Formatting.BOLD, Formatting.UNDERLINE, Formatting.RED));
@@ -200,17 +212,13 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
             list.add(Text.empty());
         }
 
-        for (var text : info.additionalInfo()) {
-            list.add(text.text().copy());
-        }
-
         var x = new ArrayList<Text>();
         for (var t : list) {
             if (t.getString().isEmpty() && x.isEmpty()) {
                 continue; // Пропускаємо порожні елементи на початку сторінки
             }
             x.add(t);
-            if (x.size() >= 12) {
+            if (x.size() == 12) {
                 builder.addPage(x.toArray(new Text[0]));
                 x.clear();
             }
@@ -219,6 +227,15 @@ public class BookOfBreweryItem extends Item implements PolymerItem {
         if (!x.isEmpty()) {
             builder.addPage(x.toArray(new Text[0]));
             x.clear();
+        }
+
+        if(!info.additionalInfo().isEmpty()) {
+            list.clear();
+            for (var text : info.additionalInfo()) {
+                list.add(text.text().copy());
+                list.add(Text.empty());
+            }
+            builder.addPage(list.toArray(new Text[0]));
         }
 
         builder.setTitle(id.toString());
